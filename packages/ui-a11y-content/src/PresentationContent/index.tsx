@@ -28,7 +28,7 @@ import PropTypes from 'prop-types'
 import { passthroughProps, getElementType } from '@instructure/ui-react-utils'
 
 type Props = {
-  as?: React.ReactElement
+  as?: React.ElementType | string
 }
 
 /**
