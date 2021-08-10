@@ -68,7 +68,7 @@ module.exports = async ({
       }),
       copyConfigFiles: true
     })
-  } else if (contentType === 'package') {
+  } else if (contentType === 'packagess') {
     await handleCreatePackage({
       template,
       path: sourcePath,
