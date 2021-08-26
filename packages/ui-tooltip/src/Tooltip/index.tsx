@@ -193,7 +193,6 @@ class Tooltip extends Component<TooltipProps> {
     } else if (typeof children === 'function') {
       return children({
         focused: hasFocus,
-        // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'props' implicitly has an 'any' type.
         getTriggerProps: (props) => {
           return {
             ...triggerProps,

@@ -29,7 +29,20 @@ export type PillProps = {
   makeStyles?: (...args: any[]) => any
   styles?: any
   as?: AsElementType
+  children: React.ReactNode
   color?: 'primary' | 'success' | 'danger' | 'info' | 'warning' | 'alert'
-  elementRef?: (...args: any[]) => any
+  /**
+   * Provides a reference to the underlying html element
+   */
+  elementRef?: (element: HTMLElement | null) => void
+  /**
+   * Valid values are `0`, `none`, `auto`, `xxx-small`, `xx-small`, `x-small`,
+   * `small`, `medium`, `large`, `x-large`, `xx-large`. Apply these values via
+   * familiar CSS-like shorthand. For example: `margin="small auto large"`.
+   */
   margin?: Spacing
+}
+
+export type PillState = {
+  truncated: boolean
 }

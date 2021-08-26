@@ -29,6 +29,13 @@ import type {
   PositionMountNode
 } from '@instructure/ui-position'
 
+export type ChildrenArgs = {
+  focused: boolean
+  getTriggerProps: <P extends Record<string, unknown>>(
+    props: P
+  ) => P & { 'aria-describedby': string }
+}
+
 export type TooltipProps = {
   makeStyles?: (...args: any[]) => any
   styles?: any
@@ -46,4 +53,5 @@ export type TooltipProps = {
   offsetY?: string | number
   onShowContent?: (...args: any[]) => any
   onHideContent?: (...args: any[]) => any
+  children?: React.ReactNode | ((args: ChildrenArgs) => React.ReactNode)
 }
