@@ -25,7 +25,14 @@
 import { AsElementType } from '@instructure/shared-types'
 
 export type TextProps = {
+  /**
+   * the element type to render as
+   */
   as?: AsElementType
+  children?: React.ReactNode
+  /**
+   * Color of the text
+   */
   color?:
     | 'primary'
     | 'secondary'
@@ -36,7 +43,10 @@ export type TextProps = {
     | 'alert'
     | 'primary-inverse'
     | 'secondary-inverse'
-  elementRef?: (...args: any[]) => any
+  /**
+   * Provides a reference to the underlying html element
+   */
+  elementRef?: (element: HTMLElement | null) => void
   fontStyle?: 'italic' | 'normal'
   letterSpacing?: 'normal' | 'condensed' | 'expanded'
   lineHeight?: 'default' | 'fit' | 'condensed' | 'double'

@@ -43,14 +43,8 @@ class Text extends Component<TextProps> {
   static readonly componentId = 'Text'
 
   static propTypes = {
-    /**
-     * the element type to render as
-     */
     as: PropTypes.elementType,
     children: PropTypes.node,
-    /**
-     * Color of the text
-     */
     color: PropTypes.oneOf([
       'primary',
       'secondary',
@@ -103,14 +97,11 @@ class Text extends Component<TextProps> {
   }
 
   componentDidMount() {
-    // @ts-expect-error ts-migrate(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
-    this.props.makeStyles()
+    this.props.makeStyles?.()
   }
 
-  // @ts-expect-error ts-migrate(6133) FIXME: 'prevProps' is declared but its value is never rea... Remove this comment to see the full error message
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    // @ts-expect-error ts-migrate(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
-    this.props.makeStyles()
+  componentDidUpdate() {
+    this.props.makeStyles?.()
   }
 
   render() {
