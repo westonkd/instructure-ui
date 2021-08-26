@@ -33,7 +33,7 @@ export type ChildrenArgs = {
   focused: boolean
   getTriggerProps: <P extends Record<string, unknown>>(
     props: P
-  ) => P & { 'aria-describedby': string }
+  ) => { 'aria-describedby': string } & P
 }
 
 export type TooltipProps = {
