@@ -48,12 +48,12 @@ export type TextProps = {
    */
   elementRef?: (element: HTMLElement | null) => void
   fontStyle?: 'italic' | 'normal'
-  letterSpacing?: 'normal' | 'condensed' | 'expanded'
+  letterSpacing: 'normal' | 'condensed' | 'expanded'
   lineHeight?: 'default' | 'fit' | 'condensed' | 'double'
-  size?: 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'xx-large'
+  size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'xx-large'
   transform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase'
   weight?: 'normal' | 'light' | 'bold'
-  wrap?: 'normal' | 'break-word'
+  wrap: 'normal' | 'break-word'
   makeStyles?: (...args: any[]) => any
   styles?: any
 }
