@@ -42,6 +42,7 @@ import { PillProps, PillState } from './types'
 ---
 category: components
 ---
+@tsProps
 **/
 @withStyle(generateStyle, generateComponentTheme)
 @testable()
