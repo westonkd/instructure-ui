@@ -53,7 +53,7 @@ export type TextProps = {
   size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'xx-large'
   transform?: 'none' | 'capitalize' | 'uppercase' | 'lowercase'
   weight?: 'normal' | 'light' | 'bold'
-  wrap: 'normal' | 'break-word'
+  wrap?: 'normal' | 'break-word'
   makeStyles?: (...args: any[]) => any
   styles?: any
 }
