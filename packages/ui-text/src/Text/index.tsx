@@ -37,6 +37,7 @@ import { TextProps } from './types'
 ---
 category: components
 ---
+@tsProps
 **/
 @withStyle(generateStyle, generateComponentTheme)
 class Text extends Component<TextProps> {
