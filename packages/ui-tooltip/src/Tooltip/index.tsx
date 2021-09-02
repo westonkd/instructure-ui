@@ -42,7 +42,7 @@ import { withStyle, jsx } from '@instructure/emotion'
 
 import generateStyle from './styles'
 import generateComponentTheme from './theme'
-import { TooltipProps } from './types'
+import { RenderChildren, TooltipProps } from './types'
 
 /**
 ---
@@ -191,7 +191,8 @@ class Tooltip extends Component<TooltipProps> {
         </Trigger>
       )
     } else if (typeof children === 'function') {
-      return children({
+      // TODO: try to remove cast when typing Tooltip
+      return (children as RenderChildren)({
         focused: hasFocus,
         getTriggerProps: (props) => ({
           ...triggerProps,
