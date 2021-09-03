@@ -34,12 +34,14 @@ import { DateInput } from '@instructure/ui-date-input'
 import { TimeSelect } from '@instructure/ui-time-select'
 import type { InteractionType } from '@instructure/ui-react-utils'
 import { Calendar } from '@instructure/ui-calendar'
+import { testable } from '@instructure/ui-testable'
+import dayjs from 'dayjs'
 
 type DateTimeInputProps = {
   /**
    * The label over the composite `DateTimeInput` component
    **/
-  description: any
+  description: React.ReactNode
   /**
    * The label over the Date Input
    **/
@@ -75,7 +77,7 @@ type DateTimeInputProps = {
   /**
    * The label over the time input
    **/
-  timeLabel: string
+  timeLabel: React.ReactNode | ((...args: any[]) => any)
   /**
    * The number of minutes to increment by when generating the allowable time options.
    */
@@ -205,13 +207,14 @@ type DateTimeInputState = {
   message?: FormMessage
   isShowingCalendar?: boolean
 }
+
 /**
 ---
 category: components
 ---
 @tsProps
 **/
-//@testable()
+@testable()
 class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
   static propTypes = {
     description: PropTypes.node.isRequired,
@@ -268,7 +271,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     dateFormat: undefined
   }
 
-  // TODO static contextTypes = {
+  // static contextTypes = {
   //  locale: PropTypes.string,
   //  timezone: PropTypes.string
   //}
@@ -393,8 +396,6 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     option?: { value: string; label: string }
   ) => {
     const date = this.state.iso
-    // eslint-disable-next-line no-console
-    console.log('onTimeChange', option)
     if (date) {
       const value = (option && option.value) || ''
       this.handleChange(e, value)
@@ -406,7 +407,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     }
   }
 
-  handleBlur = (e: any) => {
+  handleBlur = (e: SyntheticEvent) => {
     if (this.props.isRequired && !this.state.iso) {
       this.setState({
         message: this.getErrorMessage()
@@ -453,11 +454,11 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     this._timeInput = node
   }
 
-  handleShowCalendar = (_event: any) => {
+  handleShowCalendar = (_event: SyntheticEvent) => {
     this.setState({ isShowingCalendar: true })
   }
 
-  handleHideCalendar = (_event: any) => {
+  handleHideCalendar = (_event: SyntheticEvent) => {
     this.setState({ isShowingCalendar: false })
   }
 
@@ -473,7 +474,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     })
   }
 
-  handleDayClick = (_event: any, { date }: any) => {
+  handleDayClick = (_event: SyntheticEvent, { date }: { date: string }) => {
     this.setState({
       iso: date
       //selectedDate: date,
@@ -505,7 +506,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
           isOutsideMonth={!date.isSame(iso, 'month')}
           label={`${date.format('D')} ${date.format('MMMM')} ${date.format(
             'YYYY'
-          )}`} // TODO
+          )}`} // TODO externalize this?
           onClick={this.handleDayClick}
         >
           {date.format('D')}
@@ -536,9 +537,13 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
       renderWeekdayLabels
     } = this.props
     const { iso, message } = this.state
+    let localISO = ''
+    if (iso) {
+      // Convert to a local ISO date
+      const date = dayjs(iso).tz(this.timezone, true).locale(this.locale)
+      localISO = date.format()
+    }
     const renderedDate = this.formatDate(iso)
-    // eslint-disable-next-line no-console
-    console.log('RENDER ', iso)
     return (
       <FormFieldGroup
         description={description}
@@ -560,19 +565,15 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
           onRequestShowCalendar={this.handleShowCalendar}
           onRequestHideCalendar={this.handleHideCalendar}
           isShowingCalendar={this.state.isShowingCalendar}
-          //locale={locale}
-          //format={dateFormat}
           renderNextMonthButton={renderNextMonthButton}
           renderPrevMonthButton={renderPrevMonthButton}
-          //timezone={timezone}
-          //validationFeedback={false}
           isRequired={isRequired}
           interaction={interaction}
         >
           {this.renderDays()}
         </DateInput>
         <TimeSelect
-          value={iso}
+          value={localISO}
           onChange={this.handleTimeChange}
           onBlur={this.handleBlur}
           ref={this.timeInputComponentRef}
