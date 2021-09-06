@@ -40,6 +40,7 @@
     "@instructure/ui-testable": "8.8.0",
     "@instructure/ui-time-select": "8.8.0",
     "@instructure/ui-utils": "8.8.0",
+    "dayjs": "^1",
     "prop-types": "^15"
   },
   "peerDependencies": {
