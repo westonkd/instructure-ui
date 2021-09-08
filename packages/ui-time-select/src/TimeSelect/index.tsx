@@ -24,17 +24,11 @@
 
 import React, { Component } from 'react'
 
-import { ApplyLocaleContext, Locale } from '@instructure/ui-i18n'
-
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone'
-import localizedFormat from 'dayjs/plugin/localizedFormat'
-import './locales'
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
-dayjs.extend(localizedFormat)
+import {
+  ApplyLocaleContext,
+  Locale,
+  TimeUtils
+} from '@instructure/ui-i18n'
 
 import {
   getInteraction,
@@ -137,7 +131,7 @@ class TimeSelect extends Component<TimeSelectProps> {
     } else if (this.context && this.context.timezone) {
       return this.context.timezone
     }
-    return dayjs.tz.guess()
+    return TimeUtils.browserTimeZone()
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'prevProps' implicitly has an 'any' type... Remove this comment to see the full error message
@@ -193,9 +187,7 @@ class TimeSelect extends Component<TimeSelectProps> {
         return option
       }
       // value does not match an existing option
-      const date = dayjs(initialValue)
-        .tz(this.timezone(), true)
-        .locale(this.locale())
+      const date = TimeUtils.parse(initialValue, this.locale(), this.timezone())
       return { label: date.format(format) }
     }
     // otherwise return first option, if desired
@@ -224,11 +216,9 @@ class TimeSelect extends Component<TimeSelectProps> {
     let baseDate
     const baseValue = this.props.value || this.props.defaultValue
     if (baseValue) {
-      baseDate = dayjs(baseValue)
-        .tz(this.timezone(), true)
-        .locale(this.locale())
+      baseDate = TimeUtils.parse(baseValue, this.locale(), this.timezone())
     } else {
-      baseDate = dayjs().tz(this.timezone(), true).locale(this.locale())
+      baseDate = TimeUtils.now(this.locale(), this.timezone())
     }
     return baseDate.second(0).millisecond(0)
   }
@@ -356,10 +346,11 @@ class TimeSelect extends Component<TimeSelectProps> {
     let prevValue = ''
 
     if (this.props.defaultValue) {
-      const date = dayjs(this.props.defaultValue)
-        .tz(this.timezone(), true)
-        .locale(this.locale())
-
+      const date = TimeUtils.parse(
+        this.props.defaultValue,
+        this.locale(),
+        this.timezone()
+      )
       prevValue = date.format(this.props.format)
     }
 

@@ -35,7 +35,7 @@
     "@instructure/ui-test-locator": "8.9.1",
     "@instructure/ui-testable": "8.9.1",
     "@instructure/uid": "8.9.1",
-    "dayjs": "^1.10.6",
+    "dayjs": "^1",
     "prop-types": "^15"
   },
   "devDependencies": {

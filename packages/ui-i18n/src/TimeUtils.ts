@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+// these locales are supported by Canvas
 import 'dayjs/locale/ar'
 import 'dayjs/locale/hy-am'
 import 'dayjs/locale/ca'
@@ -57,3 +58,69 @@ import 'dayjs/locale/zh-cn'
 import 'dayjs/locale/tr'
 import 'dayjs/locale/uk'
 import 'dayjs/locale/cy'
+
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+import localizedFormat from 'dayjs/plugin/localizedFormat'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.extend(localizedFormat)
+
+/**
+ * Get the user's time zone (or guess)
+ * see https://day.js.org/docs/en/timezone/guessing-user-timezone
+ * @returns A time zone identifier (see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+ */
+function browserTimeZone() {
+  return dayjs.tz.guess()
+}
+
+/**
+ * Return an instance of a [dayJS](https://day.js.org/) initialized with the current date + time
+ * @param locale
+ * @param timezone
+ * @returns An instance of a dayJS.
+ */
+function now(locale: string, timezone: string) {
+  _checkParams(locale, timezone)
+  return dayjs().locale(locale).tz(timezone)
+}
+
+/**
+ * Parses a string into a localized ISO 8601 string with timezone using
+ * dayJs
+ * @param dateString
+ * @param locale
+ * @param timezone
+ * @returns ISO8601 string
+ */
+function parse(dateString: string, locale: string, timezone: string) {
+  _checkParams(locale, timezone)
+  return dayjs.tz(dateString).locale(locale).tz(timezone, true)
+}
+
+/**
+ * Determines if a string is a valid ISO 8601 string
+ * @param dateString
+ * @returns true if dateString is a valid ISO 8601 string
+ */
+function isValid(dateString: string) {
+  return dayjs(dateString).isValid()
+}
+
+function _checkParams(locale: string, timezone: string) {
+  if (locale == null) throw Error('locale must be specified')
+  if (timezone == null) throw Error('timezone must be specified')
+}
+
+const TimeUtils = {
+  now,
+  parse,
+  browserTimeZone,
+  isValid
+}
+
+export default TimeUtils
+export { TimeUtils }

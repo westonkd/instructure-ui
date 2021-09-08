@@ -26,7 +26,7 @@ import React, { Component, SyntheticEvent } from 'react'
 import PropTypes from 'prop-types'
 
 import { controllable } from '@instructure/ui-prop-types'
-import { I18nPropTypes, Locale } from '@instructure/ui-i18n'
+import { TimeUtils, I18nPropTypes, Locale } from '@instructure/ui-i18n'
 import { FormPropTypes, FormFieldGroup } from '@instructure/ui-form-field'
 import type { FormMessage } from '@instructure/ui-form-field'
 
@@ -35,7 +35,7 @@ import { TimeSelect } from '@instructure/ui-time-select'
 import type { InteractionType } from '@instructure/ui-react-utils'
 import { Calendar } from '@instructure/ui-calendar'
 import { testable } from '@instructure/ui-testable'
-import dayjs from 'dayjs'
+import type { Dayjs } from 'dayjs'
 
 type DateTimeInputProps = {
   /**
@@ -196,14 +196,14 @@ type DateTimeInputProps = {
    * onBlur event handler for when focus leaves DateTimeInput.
    * Does not fire when focus moves between DateInput and TimeSelect within the component
    */
-  onBlur?: (...args: any[]) => any
+  onBlur?: (e: SyntheticEvent) => void
 }
 
 type DateTimeInputState = {
   // the time and date currently selected
-  iso?: dayjs.Dayjs
+  iso?: Dayjs
   // the date rendered by the opened calendar
-  renderedDate: dayjs.Dayjs
+  renderedDate: Dayjs
   // The value currently displayed in the dateTime component
   dateInputText: string
   message?: FormMessage
@@ -316,7 +316,10 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
   }
 
   get timezone() {
-    return this.props.timezone || /*this.context.timezone ||*/ dayjs.tz.guess()
+    return (
+      this.props.timezone ||
+      /*this.context.timezone ||*/ TimeUtils.browserTimeZone()
+    )
   }
 
   getErrorMessage(rawValue?: string): FormMessage | undefined {
@@ -332,13 +335,13 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     dateStr?: string,
     locale = this.locale,
     timezone = this.timezone,
-    validDateModifier?: (
-      value: dayjs.Dayjs,
-      origDate: dayjs.Dayjs
-    ) => dayjs.Dayjs
+    validDateModifier?: (value: Dayjs, origDate: Dayjs) => Dayjs
   ): DateTimeInputState {
-    let parsed = dayjs(dateStr).tz(timezone, true).locale(locale)
-    if (dateStr && parsed.isValid()) {
+    let parsed
+    if (dateStr) {
+      parsed = TimeUtils.parse(dateStr, locale, timezone)
+    }
+    if (dateStr && parsed && parsed.isValid()) {
       if (validDateModifier && this.state.iso) {
         parsed = validDateModifier(parsed, this.state.iso)
       }
@@ -363,9 +366,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
       iso: undefined,
       dateInputText: '',
       message: errorMsg,
-      renderedDate: dayjs(new Date())
-        .tz(this.timezone, true)
-        .locale(this.locale)
+      renderedDate: TimeUtils.now(this.locale, this.timezone)
     }
   }
 
@@ -510,7 +511,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     const renderedDate = this.state.renderedDate
 
     let currDate = renderedDate.startOf('month').startOf('week')
-    const arr: dayjs.Dayjs[] = []
+    const arr: Dayjs[] = []
     for (let i = 0; i < Calendar.DAY_COUNT; i++) {
       currDate = currDate.add(1, 'days')
       arr.push(currDate)
@@ -523,7 +524,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
           date={dateStr}
           isSelected={date.isSame(this.state.iso, 'day')}
           isToday={date.isSame(
-            dayjs().locale(this.locale).tz(this.timezone),
+            TimeUtils.now(this.locale, this.timezone),
             'day'
           )}
           isOutsideMonth={!date.isSame(renderedDate, 'month')}

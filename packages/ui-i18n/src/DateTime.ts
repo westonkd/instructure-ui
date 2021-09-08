@@ -30,6 +30,7 @@ import moment from 'moment-timezone'
  * ---
  * @deprecated
  * ##### DEPRECATION WARNING: Will be removed in v9 since it provides no further benefit over using dayjs
+ * Use [TimeUtils](#TimeUtils) instead
  * A wrapper for [moment](https://momentjs.com/) utils.
  * @module DateTime
  */
