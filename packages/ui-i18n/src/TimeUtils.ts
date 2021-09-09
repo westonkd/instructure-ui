@@ -90,15 +90,17 @@ function now(locale: string, timezone: string) {
 
 /**
  * Parses a string into a localized ISO 8601 string with timezone using
- * dayJs
- * @param dateString
+ * dayJS.
+ * @param dateString a string accepted by dateJS's parser. If it has a timezone,
+ * it will be converted to the timezone specified by the `timezone` parameter.
  * @param locale
- * @param timezone
+ * @param timezone A time zone identifier (see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
  * @returns ISO8601 string
  */
 function parse(dateString: string, locale: string, timezone: string) {
   _checkParams(locale, timezone)
-  return dayjs.tz(dateString).locale(locale).tz(timezone, true)
+  //return dayjs(dateString).locale(locale).tz(timezone)
+  return dayjs(dateString).tz(timezone, true).locale(locale)
 }
 
 /**

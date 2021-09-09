@@ -387,19 +387,22 @@ class TimeSelect extends Component<TimeSelectProps> {
     }
     const option = this.getOption('id', id)
 
+    let newInputValue: string
     if (this.isControlled) {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'selectedOptionId' does not exist on type... Remove this comment to see the full error message
       const prev = this.getOption('id', this.state.selectedOptionId)
+      newInputValue = prev ? prev.label : ''
       this.setState({
         isShowingOptions: false,
-        inputValue: prev ? prev.label : '',
+        inputValue: newInputValue,
         filteredOptions: this.filterOptions('')
       })
     } else {
+      newInputValue = option.label
       this.setState({
         isShowingOptions: false,
         selectedOptionId: id,
-        inputValue: option.label,
+        inputValue: newInputValue,
         filteredOptions: this.filterOptions('')
       })
     }
@@ -407,7 +410,10 @@ class TimeSelect extends Component<TimeSelectProps> {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'selectedOptionId' does not exist on type... Remove this comment to see the full error message
     if (id !== this.state.selectedOptionId) {
       // @ts-expect-error ts-migrate(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
-      this.props.onChange(event, { value: option.value })
+      this.props.onChange(event, {
+        value: option.value,
+        inputText: newInputValue
+      })
     }
     // @ts-expect-error ts-migrate(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
     this.props.onHideOptions(event)
