@@ -23,19 +23,16 @@
  */
 
 import React from 'react'
-import { expect, mount, stub, /*spy,*/ wait } from '@instructure/ui-test-utils'
+import { expect, mount, stub, spy, wait } from '@instructure/ui-test-utils'
 
 //import { DateTime } from '@instructure/ui-i18n'
 
 import { DateTimeInput } from '../index'
 
 import { DateTimeInputLocator } from '../DateTimeInputLocator'
+import { DateTime, TimeUtils } from '@instructure/ui-i18n'
 
 describe('<DateTimeInput />', async () => {
-  beforeEach(async () => {
-    stub(console, 'warn') // suppress deprecation warnings
-  })
-
   const weekdayLabels = [
     <span key={1}>1</span>,
     <span key={2}>2</span>,
@@ -46,24 +43,26 @@ describe('<DateTimeInput />', async () => {
     <span key={7}>7</span>
   ]
 
+  const nextMonthButton = <span>next</span>
+  const prevMonthButton = <span>prev</span>
   /*
   it('should use the default value', async () => {
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const moment_dt = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
+    const dateTime = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
 
     await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        defaultValue={moment_dt.toISOString()}
+        defaultValue={dateTime.toISO()}
         />
   )
 
@@ -74,28 +73,28 @@ describe('<DateTimeInput />', async () => {
     const dateInput = await dateLocator.findInput()
     const timeInput = await timeLocator.findInput()
 
-    expect(dateInput).to.have.value(moment_dt.format('LL'))
-    expect(timeInput).to.have.value(moment_dt.format('LT'))
+    expect(dateInput).to.have.value(dateTime.toLocaleString(DateTime.DATE_FULL))
+    expect(timeInput).to.have.value(dateTime.toLocaleString(DateTime.TIME_SIMPLE))
   })
 
   it('should use the value', async () => {
     const locale = 'en-US'
     const timezone = 'US/Eastern'
     const onChange = stub()
-    const moment_dt = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
+    const dateTime = TimeUtils.parse('2017-05-01T23:30Z', locale, timezone)
 
     await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        value={moment_dt.format()}
+        value={dateTime.toISO()}
         onChange={onChange}
     />
   )
@@ -107,30 +106,30 @@ describe('<DateTimeInput />', async () => {
     const dateInput = await dateLocator.findInput()
     const timeInput = await timeLocator.findInput()
 
-    expect(dateInput).to.have.value(moment_dt.format('LL'))
-    expect(timeInput).to.have.value(moment_dt.format('LT'))
+    expect(dateInput).to.have.value(dateTime.toLocaleString(DateTime.DATE_FULL))
+    expect(timeInput).to.have.value(dateTime.toLocaleString(DateTime.TIME_SIMPLE))
   })
 
   it('should prefer value to defaultValue', async () => {
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const value = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
-    const defaultValue = DateTime.parse('2016-04-01T17:00Z', locale, timezone)
+    const value = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
+    const defaultValue = TimeUtils.parse('2016-04-01T17:00Z', locale, timezone)
     const onChange = stub()
 
     await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        value={value}
-        defaultValue={defaultValue.toISOString()}
+        value={value.toISO()}
+        defaultValue={defaultValue.toISO()}
         onChange={onChange}
     />
   )
@@ -142,8 +141,8 @@ describe('<DateTimeInput />', async () => {
     const dateInput = await dateLocator.findInput()
     const timeInput = await timeLocator.findInput()
 
-    expect(dateInput).to.have.value(value.format('LL'))
-    expect(timeInput).to.have.value(value.format('LT'))
+    expect(dateInput).to.have.value(value.toLocaleString(DateTime.DATE_FULL))
+    expect(timeInput).to.have.value(value.toLocaleString(DateTime.TIME_SIMPLE))
   })
 
   it('should focus the DateInput when focus is called', async () => {
@@ -153,9 +152,9 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         // @ts-expect-error TODO fix
@@ -181,16 +180,15 @@ describe('<DateTimeInput />', async () => {
   it('should set time to local midnight when only date is set', async () => {
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const moment_dt = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
-    const date = moment_dt.format().split('T')[0]
-
+    const dateObj = TimeUtils.parse('2017-04-01T18:30Z', locale, timezone)
+    const date = dateObj.toISO().split('T')[0]
     await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -206,24 +204,23 @@ describe('<DateTimeInput />', async () => {
     const dateInput = await dateLocator.findInput()
     const timeInput = await timeLocator.findInput()
 
-    expect(dateInput).to.have.value(moment_dt.format('LL'))
+    expect(dateInput).to.have.value(dateObj.toLocaleString(DateTime.DATE_FULL))
     expect(timeInput).to.have.value('12:00 AM')
   })
 
   it('should call invalidDateTimeMessage if time is set w/o a date', async () => {
     const props = {
-      invalidDateTimeMessage: (_rawd:unknown, _rawt: unknown) => 'whoops'
+      invalidDateTimeMessage: (_rawd:unknown) => 'whoops'
     }
-
     const messageSpy = spy(props, 'invalidDateTimeMessage')
 
     await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         locale="en-US"
         timezone="US/Eastern"
@@ -245,7 +242,7 @@ describe('<DateTimeInput />', async () => {
 
     expect(await dateTimeInput.find(':contains(whoops)')).to.exist()
   })
-*/
+
   it('should fire the onChange event when DateInput value changes', async () => {
     const onChange = stub()
 
@@ -253,8 +250,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
         renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
@@ -268,7 +265,7 @@ describe('<DateTimeInput />', async () => {
     const dateLocator = await dateTimeInput.findDateInput()
 
     const dateInput = await dateLocator.findInput()
-    await dateInput.change({ target: { value: '5/1/2017' } })
+    await dateInput.change({ target: { value: 'May 1, 2017' } })
     await dateInput.keyDown('enter')
 
     await wait(() => {
@@ -276,7 +273,7 @@ describe('<DateTimeInput />', async () => {
       expect(onChange.getCall(0).args[1]).to.include('2017-05-01')
     })
   })
-  /*
+
   it('should not fire the onDateChange event when DateInput value change is not a date change', async () => {
     const onChange = stub()
 
@@ -284,9 +281,9 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -300,18 +297,18 @@ describe('<DateTimeInput />', async () => {
 
     const dateInput = await dateLocator.findInput()
 
-    await dateInput.change({target: { value: 'Nov' }})
+    await dateInput.change({target: { value: 'Not a date' }})
     await dateInput.keyDown('enter')
 
     await wait(() => {
-      expect(onChange).to.have.been.calledOnce()
+      expect(onChange).to.have.been.not.called()
     })
 
-    await dateInput.change({target: { value: 'Nove' }})
+    await dateInput.change({target: { value: 'this is also garbage' }})
     await dateInput.keyDown('enter')
 
     await wait(() => {
-      expect(onChange).to.have.been.calledOnce()
+      expect(onChange).to.have.been.not.called()
     })
   })
 
@@ -320,21 +317,21 @@ describe('<DateTimeInput />', async () => {
 
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const defaultValue = DateTime.parse('2017-05-01T17:00', locale, timezone)
+    const defaultValue = TimeUtils.parse('2017-05-01T17:00', locale, timezone)
 
     await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
         onChange={onChange}
-        defaultValue={defaultValue.format()}
+        defaultValue={defaultValue.toISO()}
         />
   )
 
@@ -348,7 +345,7 @@ describe('<DateTimeInput />', async () => {
 
     await wait(() => {
       // get expected 3AM string in UTC, which is how it comes out of TimeInput
-      const newValue = new Date(DateTime.parse('2017-05-01T03:00', locale, timezone).toISOString()).valueOf()
+      const newValue = new Date(TimeUtils.parse('2017-05-01T03:00', locale, timezone).toISO()).valueOf()
 
 
       expect(onChange).to.have.been.called()
@@ -362,9 +359,9 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -381,57 +378,52 @@ describe('<DateTimeInput />', async () => {
     await timeInput.change({target: { value: '5:00 PM' }})
     await timeInput.keyDown('enter')
 
-    expect(await dateTimeInput.find(':contains(January 18, 2018 5:00 PM)')).to.exist()
+    expect(await dateTimeInput.find(':contains(January 18, 2018, 5:00 PM)')).to.exist()
   })
 
   it('should show the formatted date-time message', async () => {
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const defaultValue = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
-
+    const defaultValue = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
     await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        defaultValue={defaultValue.format()}
-        />
-  )
-
+        defaultValue={defaultValue.toISO()}
+        />)
     const dateTimeInput = await DateTimeInputLocator.find()
-
-    expect(await dateTimeInput.find(':contains(May 1, 2017 1:30 PM)')).to.exist()
+    expect(await dateTimeInput.find(':contains(May 1, 2017, 1:30 PM)')).to.exist()
   })
 
   it('should show the formatted date-time message in the proper locale', async () => {
     const timezone = 'US/Eastern'
     const locale = 'fr'
-    const defaultValue = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
+    const defaultValue = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
 
     await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        defaultValue={defaultValue.format()}
+        defaultValue={defaultValue.toISO()}
         />
   )
 
     const dateTimeInput = await DateTimeInputLocator.find()
-
-    expect(await dateTimeInput.find(':contains(1 mai 2017 13:30)')).to.exist()
+    expect(await dateTimeInput.find(':contains(1 mai 2017, 13:30)')).to.exist()
   })
 
   it('should provide the html elements for date and time input', async () => {
@@ -442,9 +434,9 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -470,30 +462,30 @@ describe('<DateTimeInput />', async () => {
 
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const moment_dt = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
+    const dateTime = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
 
     const subject = await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        value={moment_dt.toISOString()}
+        value={dateTime.toISO()}
         onChange={onChange}
         />
   )
 
     const dateTimeInput = await DateTimeInputLocator.find()
-    expect(await dateTimeInput.find(':contains(May 1, 2017 1:30 PM)')).to.exist()
+    expect(await dateTimeInput.find(':contains(May 1, 2017, 1:30 PM)')).to.exist()
 
     await subject.setProps({value: '2018-03-29T16:30Z'})
 
-    expect(await dateTimeInput.find(':contains(March 29, 2018 12:30 PM)')).to.exist()
+    expect(await dateTimeInput.find(':contains(March 29, 2018, 12:30 PM)')).to.exist()
   })
 
   it('should update message when locale changed', async () => {
@@ -501,32 +493,32 @@ describe('<DateTimeInput />', async () => {
 
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const moment_dt = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
+    const moment_dt = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
 
     const subject = await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        value={moment_dt.toISOString()}
+        value={moment_dt.toISO()}
         onChange={onChange}
         />
   )
 
     const dateTimeInput = await DateTimeInputLocator.find()
-    expect(await dateTimeInput.find(':contains(May 1, 2017 1:30 PM)')).to.exist()
+    expect(await dateTimeInput.find(':contains(May 1, 2017, 1:30 PM)')).to.exist()
 
     await subject.setProps({
       locale: 'fr',
     })
 
-    expect(await dateTimeInput.find(':contains(1 mai 2017 13:30)')).to.exist()
+    expect(await dateTimeInput.find(':contains(1 mai 2017, 13:30)')).to.exist()
   })
 
   it('should update message when timezone changed', async () => {
@@ -534,101 +526,104 @@ describe('<DateTimeInput />', async () => {
 
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const moment_dt = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
+    const moment_dt = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
 
     const subject = await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        value={moment_dt.toISOString()}
+        value={moment_dt.toISO()}
         onChange={onChange}
         />
   )
 
     const dateTimeInput = await DateTimeInputLocator.find()
 
-    expect(await dateTimeInput.find(':contains(May 1, 2017 1:30 PM)')).to.exist()
+    expect(await dateTimeInput.find(':contains(May 1, 2017, 1:30 PM)')).to.exist()
 
     await subject.setProps({
       timezone: 'Europe/Paris',
     })
 
-    expect(await dateTimeInput.find(':contains(May 1, 2017 7:30 PM)')).to.exist()
+    expect(await dateTimeInput.find(':contains(May 1, 2017, 7:30 PM)')).to.exist()
   })
-
+*/
   it('should update error message when value is invalid', async () => {
     const onChange = stub()
 
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const moment_dt = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
+    const dateTime = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
 
     await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        value={moment_dt.toISOString()}
+        value={dateTime.toISO()}
         onChange={onChange}
-        />
-  )
+      />
+    )
 
     const dateTimeInput = await DateTimeInputLocator.find()
 
-    expect(await dateTimeInput.find(':contains(May 1, 2017 1:30 PM)')).to.exist()
+    expect(
+      await dateTimeInput.find(':contains(May 1, 2017, 1:30 PM)')
+    ).to.exist()
 
     const dateLocator = await dateTimeInput.findDateInput()
     const dateInput = await dateLocator.findInput()
 
-    await dateInput.change({target: { value: 'foobar' }})
+    await dateInput.change({ target: { value: 'foobar' } })
     await dateInput.keyDown('enter')
-
+    const asd = dateTimeInput.toString(33)
+    //console.log("finding whoops", asd)
     expect(await dateTimeInput.find(':contains(whoops)')).to.exist()
   })
-
+  /*
   it('should show supplied message', async () => {
     const onChange = stub()
 
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const moment_dt = DateTime.parse('2017-05-01T17:30Z', locale, timezone)
+    const dateTime = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
 
     const subject = await mount(
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={<span>n</span>}
-        renderPrevMonthButton={<span>n</span>}
-        renderWeekdayLabels={[<span key={1}>1</span>]}
+        renderNextMonthButton={nextMonthButton}
+        renderPrevMonthButton={prevMonthButton}
+        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        value={moment_dt.toISOString()}
+        value={dateTime.toISO()}
         onChange={onChange}
         />
   )
 
     const dateTimeInput = await DateTimeInputLocator.find()
 
-    expect(await dateTimeInput.find(':contains(May 1, 2017 1:30 PM)')).to.exist()
+    expect(await dateTimeInput.find(':contains(May 1, 2017, 1:30 PM)')).to.exist()
 
     await subject.setProps({messages: [{text: 'hello world', type: 'success'}]})
 
-    expect(await dateTimeInput.find(':contains(May 1, 2017 1:30 PM)')).to.exist()
+    expect(await dateTimeInput.find(':contains(May 1, 2017, 1:30 PM)')).to.exist()
     expect(await dateTimeInput.find(':contains(hello world)')).to.exist()
   })
  */

@@ -26,7 +26,13 @@ import React, { Component, SyntheticEvent } from 'react'
 import PropTypes from 'prop-types'
 
 import { controllable } from '@instructure/ui-prop-types'
-import { TimeUtils, I18nPropTypes, Locale } from '@instructure/ui-i18n'
+import {
+  TimeUtils,
+  I18nPropTypes,
+  Locale,
+  DateTime
+} from '@instructure/ui-i18n'
+import type { DateTimeFormatPreset } from '@instructure/ui-i18n'
 import { FormPropTypes, FormFieldGroup } from '@instructure/ui-form-field'
 import type { FormMessage } from '@instructure/ui-form-field'
 
@@ -35,7 +41,6 @@ import { TimeSelect } from '@instructure/ui-time-select'
 import type { InteractionType } from '@instructure/ui-react-utils'
 import { Calendar } from '@instructure/ui-calendar'
 import { testable } from '@instructure/ui-testable'
-import type { Dayjs } from 'dayjs'
 
 type DateTimeInputProps = {
   /**
@@ -138,10 +143,10 @@ type DateTimeInputProps = {
   /**
    * This format of the composite date-time when displayed in messages.
    * Valid formats are compatible with
-   * [moment.js formats](https://momentjs.com/docs/#/displaying/format/),
+   * [Luxon formats](https://moment.github.io/luxon/#/formatting?id=presets),
    * including localized formats.
    **/
-  messageFormat?: string
+  messageFormat?: DateTimeFormatPreset
   /**
    * Vertically stacked, horizontally arranged in 2 columns, or inline.
    * See [FormFieldGroup](#FormFieldGroup) for details.
@@ -201,9 +206,9 @@ type DateTimeInputProps = {
 
 type DateTimeInputState = {
   // the time and date currently selected
-  iso?: Dayjs
+  iso?: DateTime
   // the date rendered by the opened calendar
-  renderedDate: Dayjs
+  renderedDate: DateTime
   // The value currently displayed in the dateTime component
   dateInputText: string
   // The value currently displayed in the timeSelect component
@@ -242,7 +247,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
       PropTypes.func
     ]).isRequired,
     messages: PropTypes.arrayOf(FormPropTypes.message),
-    messageFormat: PropTypes.string,
+    messageFormat: PropTypes.object,
     layout: PropTypes.oneOf(['stacked', 'columns', 'inline']),
     value: controllable(I18nPropTypes.iso8601, 'onChange'),
     defaultValue: I18nPropTypes.iso8601,
@@ -259,7 +264,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
   static defaultProps = {
     layout: 'inline',
     timeStep: 30,
-    messageFormat: 'LLL',
+    messageFormat: DateTime.DATETIME_HUGE,
     isRequired: false,
     // Leave interaction default undefined so that `disabled` and `readOnly` can also be supplied
     interaction: undefined,
@@ -281,6 +286,9 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
   //  locale: PropTypes.string,
   //  timezone: PropTypes.string
   //}
+
+  // Localized date with full month, e.g. "August 6, 2014"
+  private static readonly _dateInputFormat = 'DDD'
   private _dateInput?: DateInput
   private _timeInput?: TimeSelect
 
@@ -288,7 +296,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     super(props)
     this.state = {
       ...this.recalculateState(props.value || props.defaultValue),
-      //timeSelectValue: props.value || props.defaultValue // needed?
+      timeSelectValue: props.value || props.defaultValue,
       isShowingCalendar: false
     }
   }
@@ -306,7 +314,8 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
       this.setState((prevState: DateTimeInputState) => {
         const iso = valueChanged
           ? nextProps.value || nextProps.defaultValue
-          : prevState.iso?.format()
+          : prevState.iso?.toISO()
+        //: prevState.iso?.format()
         return {
           ...this.recalculateState(iso, nextProps.locale, nextProps.timezone)
         }
@@ -347,25 +356,25 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     if (dateStr) {
       parsed = TimeUtils.parse(dateStr, locale, timezone)
     }
-    if (dateStr && parsed && parsed.isValid()) {
+    //console.log("RECALC", dateStr, parsed)
+    if (dateStr && parsed && parsed.isValid) {
       if (doNotChangeTime && this.state.iso) {
-        parsed = parsed.hour(this.state.iso.hour())
-        parsed = parsed.minute(this.state.iso.minute())
+        parsed = parsed.set({ hour: this.state.iso.hour })
+        parsed = parsed.set({ minute: this.state.iso.minute })
       }
       if (doNotChangeDate && this.state.iso) {
-        parsed = parsed.date(this.state.iso.date())
-        parsed = parsed.month(this.state.iso.month())
-        parsed = parsed.year(this.state.iso.year())
+        parsed = parsed.set({ day: this.state.iso.day })
+        parsed = parsed.set({ month: this.state.iso.month })
+        parsed = parsed.set({ year: this.state.iso.year })
       }
       return {
         iso: parsed,
-        // TODO make it customizable
-        dateInputText: `${parsed.format('MMMM')} ${parsed.format(
-          'D'
-        )}, ${parsed.format('YYYY')}`,
+        dateInputText: parsed.toFormat(DateTimeInput._dateInputFormat),
         message: {
           type: 'success',
-          text: parsed.format(this.props.messageFormat)
+          text: this.props.messageFormat
+            ? parsed.toLocaleString(this.props.messageFormat)
+            : parsed.toLocaleString(DateTime.DATETIME_HUGE)
         },
         renderedDate: parsed
       }
@@ -384,8 +393,15 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
 
   // when the user enters a new date via keyboard
   // dateValue is a localized value, like '5/1/2017'
-  handleDateTextChange = (_e: SyntheticEvent, dateValue: { value: string }) => {
-    this.setState({ dateInputText: dateValue.value })
+  // TODO here we might need a different event listener, e.g. one for enter
+  handleDateTextChange = (event: SyntheticEvent, date: { value: string }) => {
+    //console.log("TEXT CHANGE", date.value, event)
+    this.handleDayClick(event, {
+      date: DateTime.fromFormat(date.value, DateTimeInput._dateInputFormat, {
+        locale: this.locale,
+        zone: this.timezone
+      }).toISO()
+    })
   }
 
   // date is returned es a ISO string, like 2021-09-14T22:00:00.000Z
@@ -423,30 +439,40 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
   }
 
   changeStateIfNeeded = (newState: DateTimeInputState, e: SyntheticEvent) => {
+    //console.log("changeStateIfNeeded", newState.iso)
     this.setState({ message: newState.message })
     if (!newState.iso && !this.state.iso) {
       return
     }
-    if (!this.state.iso || !this.state.iso.isSame(newState.iso)) {
+    if (
+      !this.state.iso ||
+      !newState.iso ||
+      !this.state.iso.equals(newState.iso)
+    ) {
       if (!this.state.iso) {
         this.setState({
           timeSelectValue: this._timeInput
             ?.getBaseDate()
-            .minute(0)
-            .hour(0)
-            .toISOString()
+            .set({ minute: 0, hour: 0 })
+            .toISO()
         })
       }
       this.setState(newState)
       if (this.props.onChange) {
-        this.props.onChange(e, newState.iso?.format())
+        //console.log("onChange", newState.iso?.toISO())
+        this.props.onChange(e, newState.iso?.toISO())
       }
     }
   }
 
   handleBlur = (e: SyntheticEvent) => {
+    //console.log("blur", this.state.dateInputText, this.state.timeSelectValue)
     const newState = this.recalculateState(
-      this.state.dateInputText,
+      DateTime.fromFormat(
+        this.state.dateInputText,
+        DateTimeInput._dateInputFormat,
+        { locale: this.locale, zone: this.timezone }
+      ).toISO(),
       this.locale,
       this.timezone,
       false,
@@ -502,63 +528,56 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     this.setState({ isShowingCalendar: false })
   }
 
-  handleSelectNextDay = (_event: SyntheticEvent) => {
-    const toAlter = this.state.iso ? this.state.iso : this.state.renderedDate
-    toAlter.add(1, 'day')
-    this.setState({
-      iso: toAlter,
-      renderedDate: toAlter
-    })
+  handleSelectNextDay = (event: SyntheticEvent) => {
+    let toAlter = this.state.iso ? this.state.iso : this.state.renderedDate
+    toAlter = toAlter.plus({ days: 1 })
+    this.handleDayClick(event, { date: toAlter.toISO() })
   }
 
-  handleSelectPrevDay = (_event: SyntheticEvent) => {
-    const toAlter = this.state.iso ? this.state.iso : this.state.renderedDate
-    toAlter.add(-1, 'day')
-    this.setState({
-      iso: toAlter,
-      renderedDate: toAlter
-    })
+  handleSelectPrevDay = (event: SyntheticEvent) => {
+    let toAlter = this.state.iso ? this.state.iso : this.state.renderedDate
+    toAlter = toAlter.minus({ days: 1 })
+    this.handleDayClick(event, { date: toAlter.toISO() })
   }
 
   handleRenderNextMonth = (_event: SyntheticEvent) => {
     this.setState({
-      renderedDate: this.state.renderedDate.add(1, 'month')
+      renderedDate: this.state.renderedDate.plus({ months: 1 })
     })
   }
 
   handleRenderPrevMonth = (_event: SyntheticEvent) => {
     this.setState({
-      renderedDate: this.state.renderedDate.add(-1, 'month')
+      renderedDate: this.state.renderedDate.minus({ months: 1 })
     })
   }
 
   renderDays() {
     const renderedDate = this.state.renderedDate
-
     let currDate = renderedDate.startOf('month').startOf('week')
-    const arr: Dayjs[] = []
+    const arr: DateTime[] = []
     for (let i = 0; i < Calendar.DAY_COUNT; i++) {
-      currDate = currDate.add(1, 'days')
+      currDate = currDate.plus({ days: 1 })
       arr.push(currDate)
     }
     return arr.map((date) => {
-      const dateStr = date.format()
+      const dateStr = date.toISO() //date.format()
       return (
         <DateInput.Day
           key={dateStr}
           date={dateStr}
-          isSelected={date.isSame(this.state.iso, 'day')}
-          isToday={date.isSame(
+          isSelected={
+            this.state.iso ? date.hasSame(this.state.iso, 'day') : false
+          }
+          isToday={date.hasSame(
             TimeUtils.now(this.locale, this.timezone),
             'day'
           )}
-          isOutsideMonth={!date.isSame(renderedDate, 'month')}
-          label={`${date.format('D')} ${date.format('MMMM')} ${date.format(
-            'YYYY'
-          )}`} // TODO make this customizable?
+          isOutsideMonth={!date.hasSame(renderedDate, 'month')}
+          label={date.toFormat('dd')}
           onClick={this.handleDayClick}
         >
-          {date.format('D')}
+          {date.toFormat('dd')}
         </DateInput.Day>
       )
     })
@@ -619,8 +638,8 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
           interaction={interaction}
           renderNavigationLabel={
             <span>
-              <div>{this.state.renderedDate.format('MMMM')}</div>
-              <div>{this.state.renderedDate.format('YYYY')}</div>
+              <div>{this.state.renderedDate.toFormat('MMMM')}</div>
+              <div>{this.state.renderedDate.toFormat('y')}</div>
             </span>
           }
         >

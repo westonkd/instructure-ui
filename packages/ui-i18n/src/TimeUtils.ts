@@ -22,75 +22,35 @@
  * SOFTWARE.
  */
 
-// these locales are supported by Canvas
-import 'dayjs/locale/ar'
-import 'dayjs/locale/hy-am'
-import 'dayjs/locale/ca'
-import 'dayjs/locale/da'
-import 'dayjs/locale/nl'
-import 'dayjs/locale/en-au'
-import 'dayjs/locale/en-ca'
-import 'dayjs/locale/en-gb'
-import 'dayjs/locale/fi'
-import 'dayjs/locale/fr'
-import 'dayjs/locale/fr-ca'
-import 'dayjs/locale/de'
-import 'dayjs/locale/el'
-import 'dayjs/locale/ht'
-import 'dayjs/locale/he'
-import 'dayjs/locale/hu'
-import 'dayjs/locale/is'
-import 'dayjs/locale/it'
-import 'dayjs/locale/ja'
-import 'dayjs/locale/ko'
-import 'dayjs/locale/mi'
-import 'dayjs/locale/nb'
-import 'dayjs/locale/fa'
-import 'dayjs/locale/pl'
-import 'dayjs/locale/pt'
-import 'dayjs/locale/pt-br'
-import 'dayjs/locale/ru'
-import 'dayjs/locale/zh'
-import 'dayjs/locale/sl'
-import 'dayjs/locale/es'
-import 'dayjs/locale/sv'
-import 'dayjs/locale/zh-cn'
-import 'dayjs/locale/tr'
-import 'dayjs/locale/uk'
-import 'dayjs/locale/cy'
-
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone'
-import localizedFormat from 'dayjs/plugin/localizedFormat'
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
-dayjs.extend(localizedFormat)
+import { DateTime } from 'luxon'
+import type { DateTimeFormatPreset } from 'luxon'
 
 /**
  * Get the user's time zone (or guess)
- * see https://day.js.org/docs/en/timezone/guessing-user-timezone
  * @returns A time zone identifier (see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
  */
 function browserTimeZone() {
-  return dayjs.tz.guess()
+  return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
 
 /**
- * Return an instance of a [dayJS](https://day.js.org/) initialized with the current date + time
+ * Return an instance of a Luxon DateTime object initialized with the current date + time
  * @param locale
- * @param timezone
- * @returns An instance of a dayJS.
+ * @param timezone the timezone the object will be in, the given time will
+ * be the local time there.
+ * @returns An instance of a DateTime.
  */
 function now(locale: string, timezone: string) {
   _checkParams(locale, timezone)
-  return dayjs().locale(locale).tz(timezone)
+  return DateTime.now()
+    .setZone(timezone, { keepLocalTime: true })
+    .setLocale(locale)
+  //return dayjs().locale(locale).tz(timezone)
 }
 
 /**
- * Parses a string into a localized ISO 8601 string with timezone using
- * dayJS.
+ * Parses a ISO string into a localized ISO 8601 string with timezone using
+ * Luxon.
  * @param dateString a string accepted by dateJS's parser. If it has a timezone,
  * it will be converted to the timezone specified by the `timezone` parameter.
  * @param locale
@@ -99,8 +59,8 @@ function now(locale: string, timezone: string) {
  */
 function parse(dateString: string, locale: string, timezone: string) {
   _checkParams(locale, timezone)
-  //return dayjs(dateString).locale(locale).tz(timezone)
-  return dayjs(dateString).tz(timezone, true).locale(locale)
+  return DateTime.fromISO(dateString, { zone: timezone, locale: locale })
+  //return dayjs(dateString).tz(timezone).locale(locale).local()
 }
 
 /**
@@ -109,7 +69,8 @@ function parse(dateString: string, locale: string, timezone: string) {
  * @returns true if dateString is a valid ISO 8601 string
  */
 function isValid(dateString: string) {
-  return dayjs(dateString).isValid()
+  return DateTime.fromISO(dateString).isValid
+  //return dayjs(dateString).isValid()
 }
 
 function _checkParams(locale: string, timezone: string) {
@@ -125,4 +86,5 @@ const TimeUtils = {
 }
 
 export default TimeUtils
-export { TimeUtils }
+export { TimeUtils, DateTime }
+export type { DateTimeFormatPreset }

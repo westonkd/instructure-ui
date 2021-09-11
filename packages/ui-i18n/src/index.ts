@@ -26,7 +26,7 @@ export { ApplyLocale } from './ApplyLocale'
 export { ApplyLocaleContext } from './ApplyLocale/ApplyLocaleContext'
 
 export { bidirectional } from './bidirectional'
-export { TimeUtils } from './TimeUtils'
+export { TimeUtils, DateTime } from './TimeUtils'
 export { getTextDirection } from './getTextDirection'
 export { I18nPropTypes } from './I18nPropTypes'
 export { Locale } from './Locale'
@@ -36,6 +36,7 @@ export {
   ApplyTextDirection
 } from './ApplyTextDirection'
 
+export type { DateTimeFormatPreset } from './TimeUtils'
 export type { BidirectionalProps } from './bidirectional'
 export type { ApplyLocaleProps } from './ApplyLocale/props'
 export type { ApplyTextDirectionProps } from './ApplyTextDirection/props'
