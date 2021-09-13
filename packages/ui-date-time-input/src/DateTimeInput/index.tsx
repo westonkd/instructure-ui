@@ -82,7 +82,7 @@ type DateTimeInputProps = {
   /**
    * The label over the time input
    **/
-  timeLabel: React.ReactNode | ((...args: any[]) => any)
+  timeLabel: React.ReactNode | ((...args: any[]) => React.ReactNode)
   /**
    * The number of minutes to increment by when generating the allowable time options.
    */
@@ -211,13 +211,13 @@ type DateTimeInputState = {
   renderedDate: DateTime
   // The value currently displayed in the dateTime component
   dateInputText: string
-  // The value currently displayed in the timeSelect component
+  // The value currently displayed in the timeSelect component as ISO datetime
   timeSelectValue?: string
+  // The message (success/error) shown below the component
   message?: FormMessage
+  // Whether the calendar is open
   isShowingCalendar?: boolean
 }
-
-// TODO check if it works when adding default values and changing values
 
 /**
 ---
@@ -289,35 +289,33 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
 
   // Localized date with full month, e.g. "August 6, 2014"
   private static readonly _dateInputFormat = 'DDD'
-  private _dateInput?: DateInput
   private _timeInput?: TimeSelect
 
   constructor(props: DateTimeInputProps) {
     super(props)
+    const initState = this.recalculateState(props.value || props.defaultValue)
     this.state = {
-      ...this.recalculateState(props.value || props.defaultValue),
-      timeSelectValue: props.value || props.defaultValue,
+      ...initState,
+      timeSelectValue: initState.iso
+        ? props.value || props.defaultValue
+        : undefined,
       isShowingCalendar: false
     }
   }
 
-  componentWillReceiveProps(nextProps: DateTimeInputProps) {
+  componentDidUpdate(prevProps: Readonly<DateTimeInputProps>): void {
     const valueChanged =
-      nextProps.value !== this.props.value ||
-      nextProps.defaultValue !== this.props.defaultValue
+      prevProps.value !== this.props.value ||
+      prevProps.defaultValue !== this.props.defaultValue
     const isUpdated =
       valueChanged ||
-      nextProps.locale !== this.props.locale ||
-      nextProps.timezone !== this.props.timezone
+      prevProps.locale !== this.props.locale ||
+      prevProps.timezone !== this.props.timezone
 
     if (isUpdated) {
-      this.setState((prevState: DateTimeInputState) => {
-        const iso = valueChanged
-          ? nextProps.value || nextProps.defaultValue
-          : prevState.iso?.toISO()
-        //: prevState.iso?.format()
+      this.setState((_prevState: DateTimeInputState) => {
         return {
-          ...this.recalculateState(iso, nextProps.locale, nextProps.timezone)
+          ...this.recalculateState(this.props.value || this.props.defaultValue)
         }
       })
     }
@@ -347,16 +345,13 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
 
   recalculateState(
     dateStr?: string,
-    locale = this.locale,
-    timezone = this.timezone,
     doNotChangeDate = false,
     doNotChangeTime = false
   ): DateTimeInputState {
     let parsed
     if (dateStr) {
-      parsed = TimeUtils.parse(dateStr, locale, timezone)
+      parsed = TimeUtils.parse(dateStr, this.locale, this.timezone)
     }
-    //console.log("RECALC", dateStr, parsed)
     if (dateStr && parsed && parsed.isValid) {
       if (doNotChangeTime && this.state.iso) {
         parsed = parsed.set({ hour: this.state.iso.hour })
@@ -367,6 +362,12 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
         parsed = parsed.set({ month: this.state.iso.month })
         parsed = parsed.set({ year: this.state.iso.year })
       }
+      const newTimeSelectValue = this.state?.timeSelectValue
+        ? this.state.timeSelectValue
+        : this._timeInput
+            ?.getBaseDate()
+            .set({ minute: parsed.minute, hour: parsed.hour })
+            .toISO()
       return {
         iso: parsed,
         dateInputText: parsed.toFormat(DateTimeInput._dateInputFormat),
@@ -376,6 +377,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
             ? parsed.toLocaleString(this.props.messageFormat)
             : parsed.toLocaleString(DateTime.DATETIME_HUGE)
         },
+        timeSelectValue: newTimeSelectValue,
         renderedDate: parsed
       }
     }
@@ -391,11 +393,10 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     }
   }
 
-  // when the user enters a new date via keyboard
+  // when the user enters a new date via keyboard. Currently only possible
+  // by replacing 1 letter...
   // dateValue is a localized value, like '5/1/2017'
-  // TODO here we might need a different event listener, e.g. one for enter
   handleDateTextChange = (event: SyntheticEvent, date: { value: string }) => {
-    //console.log("TEXT CHANGE", date.value, event)
     this.handleDayClick(event, {
       date: DateTime.fromFormat(date.value, DateTimeInput._dateInputFormat, {
         locale: this.locale,
@@ -406,13 +407,26 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
 
   // date is returned es a ISO string, like 2021-09-14T22:00:00.000Z
   handleDayClick = (event: SyntheticEvent, { date }: { date: string }) => {
-    const newState = this.recalculateState(
-      date,
-      this.locale,
-      this.timezone,
-      false,
-      true
-    )
+    let newState
+    if (
+      this.state.timeSelectValue &&
+      (!this.state.dateInputText || this.state.dateInputText == '')
+    ) {
+      // There is already a selected time, but no date. Adjust the time too
+      let dateParsed = TimeUtils.parse(date, this.locale, this.timezone)
+      const timeParsed = TimeUtils.parse(
+        this.state.timeSelectValue,
+        this.locale,
+        this.timezone
+      )
+      dateParsed = dateParsed.set({
+        hour: timeParsed.hour,
+        minute: timeParsed.minute
+      })
+      newState = this.recalculateState(dateParsed.toISO(), false, false)
+    } else {
+      newState = this.recalculateState(date, false, true)
+    }
     this.changeStateIfNeeded(newState, event)
   }
 
@@ -427,19 +441,12 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
       // if no date is set just return the input text, it will error
       newValue = option.inputText
     }
-    this.setState({ timeSelectValue: option.value })
-    const newState = this.recalculateState(
-      newValue,
-      this.locale,
-      this.timezone,
-      true,
-      false
-    )
+    const newState = this.recalculateState(newValue, true, false)
     this.changeStateIfNeeded(newState, event)
+    this.setState({ timeSelectValue: option.value })
   }
 
   changeStateIfNeeded = (newState: DateTimeInputState, e: SyntheticEvent) => {
-    //console.log("changeStateIfNeeded", newState.iso)
     this.setState({ message: newState.message })
     if (!newState.iso && !this.state.iso) {
       return
@@ -449,32 +456,20 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
       !newState.iso ||
       !this.state.iso.equals(newState.iso)
     ) {
-      if (!this.state.iso) {
-        this.setState({
-          timeSelectValue: this._timeInput
-            ?.getBaseDate()
-            .set({ minute: 0, hour: 0 })
-            .toISO()
-        })
-      }
       this.setState(newState)
       if (this.props.onChange) {
-        //console.log("onChange", newState.iso?.toISO())
         this.props.onChange(e, newState.iso?.toISO())
       }
     }
   }
 
   handleBlur = (e: SyntheticEvent) => {
-    //console.log("blur", this.state.dateInputText, this.state.timeSelectValue)
     const newState = this.recalculateState(
       DateTime.fromFormat(
         this.state.dateInputText,
         DateTimeInput._dateInputFormat,
         { locale: this.locale, zone: this.timezone }
       ).toISO(),
-      this.locale,
-      this.timezone,
       false,
       true
     )
@@ -484,36 +479,9 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     // The timeout gives it a moment for that to happen
     if (typeof this.props.onBlur === 'function') {
       window.setTimeout(() => {
-        if (!this.focused) {
-          this.props.onBlur?.(e)
-        }
+        this.props.onBlur?.(e)
       }, 0)
     }
-  }
-
-  /**
-   * Focus me.
-   *
-   * When this `DateTimeInput` gets focus, we hand it off to the
-   * underlying `DateInput`.
-   */
-  focus = () => {
-    if (this._dateInput) {
-      // @ts-expect-error TODO fix this when DateInput is typed
-      this._dateInput.focus()
-    }
-  }
-
-  get focused() {
-    return (
-      // @ts-expect-error TODO fix this when DateInput is typed
-      (this._dateInput && this._dateInput.focused) ||
-      (this._timeInput && this._timeInput.focused)
-    )
-  }
-
-  dateInputComponentRef = (node: DateInput) => {
-    this._dateInput = node
   }
 
   timeInputComponentRef = (node: TimeSelect) => {
@@ -561,7 +529,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
       arr.push(currDate)
     }
     return arr.map((date) => {
-      const dateStr = date.toISO() //date.format()
+      const dateStr = date.toISO()
       return (
         <DateInput.Day
           key={dateStr}
@@ -590,7 +558,6 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
       dateLabel,
       renderNextMonthButton,
       renderPrevMonthButton,
-      //dateFormat,
       dateInputRef,
       timeLabel,
       timeFormat,
@@ -620,7 +587,6 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
           value={this.state.dateInputText}
           onChange={this.handleDateTextChange}
           onBlur={this.handleBlur}
-          ref={this.dateInputComponentRef}
           inputRef={dateInputRef}
           placeholder={datePlaceholder}
           renderLabel={dateLabel}

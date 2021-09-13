@@ -45,7 +45,6 @@ function now(locale: string, timezone: string) {
   return DateTime.now()
     .setZone(timezone, { keepLocalTime: true })
     .setLocale(locale)
-  //return dayjs().locale(locale).tz(timezone)
 }
 
 /**
@@ -60,7 +59,6 @@ function now(locale: string, timezone: string) {
 function parse(dateString: string, locale: string, timezone: string) {
   _checkParams(locale, timezone)
   return DateTime.fromISO(dateString, { zone: timezone, locale: locale })
-  //return dayjs(dateString).tz(timezone).locale(locale).local()
 }
 
 /**
@@ -70,7 +68,6 @@ function parse(dateString: string, locale: string, timezone: string) {
  */
 function isValid(dateString: string) {
   return DateTime.fromISO(dateString).isValid
-  //return dayjs(dateString).isValid()
 }
 
 function _checkParams(locale: string, timezone: string) {
