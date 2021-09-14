@@ -41,6 +41,7 @@ import { TimeSelect } from '@instructure/ui-time-select'
 import type { InteractionType } from '@instructure/ui-react-utils'
 import { Calendar } from '@instructure/ui-calendar'
 import { testable } from '@instructure/ui-testable'
+import { AccessibleContent } from '@instructure/ui-a11y-content'
 
 type DateTimeInputProps = {
   /**
@@ -57,14 +58,14 @@ type DateTimeInputProps = {
    * prop to `icon`, the `size` prop to `small`, and setting the `icon` prop to
    * [IconArrowOpenEnd](#iconography).
    */
-  renderNextMonthButton: ((...args: any[]) => any) | React.ReactNode
+  renderNextMonthButton: ((...args: any[]) => React.ReactNode) | React.ReactNode
   /**
    * A button to render in the calendar navigation header. The recommendation is
    * to compose it with the [Button](#Button) component, setting the `variant`
    * prop to `icon`, the `size` prop to `small`, and setting the `icon` prop to
    * [IconArrowOpenStart](#iconography).
    */
-  renderPrevMonthButton: ((...args: any[]) => any) | React.ReactNode
+  renderPrevMonthButton: ((...args: any[]) => React.ReactNode) | React.ReactNode
   /**
    * HTML placeholder text to display when the date input has no value.
    * This should be hint text, not a label replacement.
@@ -168,9 +169,11 @@ type DateTimeInputProps = {
    * `<Calendar />` is navigated. Consider using
    * [AccessibleContent](#AccessibleContent) with the `alt` prop containing the
    * full day name for assistive technologies and the children containing the
-   * abbreviation. ex. `[<AccessibleContent alt="Sunday">Sun</AccessibleContent>, ...]`
+   * abbreviation. ex. `[<AccessibleContent alt="Monday">Mon</AccessibleContent>, ...]`
+   *
+   * Note that the first day of the week is always Monday!
    */
-  renderWeekdayLabels: (((...args: any[]) => any) | React.ReactNode)[]
+  renderWeekdayLabels?: (((...args: any[]) => any) | React.ReactNode)[]
   /**
    * Specifies if the input is required.
    */
@@ -209,7 +212,8 @@ type DateTimeInputState = {
   iso?: DateTime
   // the date rendered by the opened calendar
   renderedDate: DateTime
-  // The value currently displayed in the dateTime component
+  // The value currently displayed in the dateTime component.
+  // Just the time part is visible
   dateInputText: string
   // The value currently displayed in the timeSelect component as ISO datetime
   timeSelectValue?: string
@@ -272,6 +276,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     timeInputRef: undefined,
     dateInputRef: undefined,
     onChange: undefined,
+    renderWeekdayLabels: undefined,
     defaultValue: undefined,
     value: undefined,
     messages: undefined,
@@ -522,11 +527,13 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
 
   renderDays() {
     const renderedDate = this.state.renderedDate
+    // Sets it to the first Monday(!) of the month
+    // TODO: This might be not good enough, I assume that US ppl want Sunday
     let currDate = renderedDate.startOf('month').startOf('week')
     const arr: DateTime[] = []
     for (let i = 0; i < Calendar.DAY_COUNT; i++) {
-      currDate = currDate.plus({ days: 1 })
       arr.push(currDate)
+      currDate = currDate.plus({ days: 1 })
     }
     return arr.map((date) => {
       const dateStr = date.toISO()
@@ -549,6 +556,35 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
         </DateInput.Day>
       )
     })
+  }
+
+  // The default weekdays rendered in the calendar
+  get defaultWeekdays() {
+    const shortDayNames = TimeUtils.getDayNames(this.locale, 'short')
+    const longDayNames = TimeUtils.getDayNames(this.locale, 'long')
+    return [
+      <AccessibleContent key={1} alt={longDayNames[0]}>
+        {shortDayNames[0]}
+      </AccessibleContent>,
+      <AccessibleContent key={2} alt={longDayNames[1]}>
+        {shortDayNames[1]}
+      </AccessibleContent>,
+      <AccessibleContent key={3} alt={longDayNames[2]}>
+        {shortDayNames[2]}
+      </AccessibleContent>,
+      <AccessibleContent key={4} alt={longDayNames[3]}>
+        {shortDayNames[3]}
+      </AccessibleContent>,
+      <AccessibleContent key={5} alt={longDayNames[4]}>
+        {shortDayNames[4]}
+      </AccessibleContent>,
+      <AccessibleContent key={6} alt={longDayNames[5]}>
+        {shortDayNames[5]}
+      </AccessibleContent>,
+      <AccessibleContent key={7} alt={longDayNames[6]}>
+        {shortDayNames[6]}
+      </AccessibleContent>
+    ]
   }
 
   render() {
@@ -590,7 +626,9 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
           inputRef={dateInputRef}
           placeholder={datePlaceholder}
           renderLabel={dateLabel}
-          renderWeekdayLabels={renderWeekdayLabels}
+          renderWeekdayLabels={
+            renderWeekdayLabels ? renderWeekdayLabels : this.defaultWeekdays
+          }
           onRequestShowCalendar={this.handleShowCalendar}
           onRequestHideCalendar={this.handleHideCalendar}
           isShowingCalendar={this.state.isShowingCalendar}

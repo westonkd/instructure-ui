@@ -31,16 +31,6 @@ import { DateTimeInputLocator } from '../DateTimeInputLocator'
 import { DateTime, TimeUtils } from '@instructure/ui-i18n'
 
 describe('<DateTimeInput />', async () => {
-  const weekdayLabels = [
-    <span key={1}>1</span>,
-    <span key={2}>2</span>,
-    <span key={3}>3</span>,
-    <span key={4}>4</span>,
-    <span key={5}>5</span>,
-    <span key={6}>6</span>,
-    <span key={7}>7</span>
-  ]
-
   const nextMonthButton = <span>next</span>
   const prevMonthButton = <span>prev</span>
 
@@ -55,7 +45,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -80,7 +69,6 @@ describe('<DateTimeInput />', async () => {
   it('should use the value', async () => {
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const onChange = stub()
     const dateTime = TimeUtils.parse('2017-05-01T23:30Z', locale, timezone)
 
     await mount(
@@ -89,13 +77,11 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
         value={dateTime.toISO()}
-        onChange={onChange}
       />
     )
 
@@ -125,7 +111,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -158,7 +143,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -190,7 +174,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         locale="en-US"
         timezone="US/Eastern"
@@ -222,7 +205,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -253,7 +235,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -295,7 +276,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -332,7 +312,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -364,7 +343,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -389,7 +367,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -412,7 +389,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -450,7 +426,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -473,8 +448,6 @@ describe('<DateTimeInput />', async () => {
   })
 
   it('should update message when locale changed', async () => {
-    const onChange = stub()
-
     const locale = 'en-US'
     const timezone = 'US/Eastern'
     const moment_dt = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
@@ -485,13 +458,11 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
         value={moment_dt.toISO()}
-        onChange={onChange}
       />
     )
 
@@ -508,8 +479,6 @@ describe('<DateTimeInput />', async () => {
   })
 
   it('should update message when timezone changed', async () => {
-    const onChange = stub()
-
     const locale = 'en-US'
     const timezone = 'US/Eastern'
     const moment_dt = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
@@ -520,13 +489,11 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
         value={moment_dt.toISO()}
-        onChange={onChange}
       />
     )
 
@@ -552,7 +519,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         value="totally not a date"
@@ -569,7 +535,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         defaultValue="totally not a date"
@@ -590,7 +555,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -618,7 +582,6 @@ describe('<DateTimeInput />', async () => {
         dateLabel="date"
         renderNextMonthButton={nextMonthButton}
         renderPrevMonthButton={prevMonthButton}
-        renderWeekdayLabels={weekdayLabels}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}

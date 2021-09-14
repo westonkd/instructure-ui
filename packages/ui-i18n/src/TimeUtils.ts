@@ -24,7 +24,9 @@
 
 import { DateTime } from 'luxon'
 import type { DateTimeFormatPreset } from 'luxon'
+import { getWeekStartByLocale } from 'weekstart'
 
+// use https://github.com/gamtiq/weekstart
 /**
  * Get the user's time zone (or guess)
  * @returns A time zone identifier (see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
@@ -62,6 +64,36 @@ function parse(dateString: string, locale: string, timezone: string) {
 }
 
 /**
+ * Returns the days of the week in the given locale,
+ * for example ["Monday", "Tuesday",..]. It always begins with Monday.
+ * @param locale A locale accepted by the browser, e.g. America/New_York
+ * @param format If set to 'short' it will be maximum 3 letters long,
+ *               if set to 'long' it will be the full word.
+ */
+function getLocalDaysOfTheWeek(locale: string, format: 'short' | 'long') {
+  const ret: string[] = []
+  const luxonFormat = format === 'short' ? 'EEE' : 'EEEE'
+  let currentDay = DateTime.now().startOf('week')
+  for (let i = 0; i < 7; i++) {
+    ret.push(currentDay.toFormat(luxonFormat, { locale: locale }))
+    currentDay = currentDay.plus({ days: 1 })
+  }
+  return ret
+}
+
+/**
+ * Returns the first day of the week in the given locale.
+ * The locale decides what is the first day, e.g. Sunday in the US, Monday in
+ * the EU.
+ * @param date
+ * @param locale A locale string, like 'en-us'
+ */
+//function getFirstDayOfWeek(date: DateTime, locale: string) {
+//  const firstDay = getWeekStartByLocale(locale)
+// TODO finish this
+//}
+
+/**
  * Determines if a string is a valid ISO 8601 string
  * @param dateString
  * @returns true if dateString is a valid ISO 8601 string
@@ -79,7 +111,9 @@ const TimeUtils = {
   now,
   parse,
   browserTimeZone,
-  isValid
+  isValid,
+  getWeekStartByLocale,
+  getDayNames: getLocalDaysOfTheWeek
 }
 
 export default TimeUtils
