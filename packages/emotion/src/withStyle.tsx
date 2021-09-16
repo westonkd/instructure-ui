@@ -153,11 +153,12 @@ const withStyle = decorator(
       )
     })
     hoistNonReactStatics(WithStyle, ComposedComponent)
-    // we have to pass these on, because sometimes we need to
+    // we have to pass these on, because sometimes users
     // access propTypes of the component in other components
-    // (mainly in the `omitProps` method)
     WithStyle.propTypes = ComposedComponent.propTypes
     WithStyle.defaultProps = ComposedComponent.defaultProps
+    // @ts-expect-error These static fields exist on InstUI components
+    WithStyle.allowedProps = ComposedComponent.allowedProps
     // we are exposing the theme generator for the docs generation
     ;(WithStyle as any).generateComponentTheme = generateComponentTheme
     // we have to add defaults to makeStyles and styles added by this decorator
