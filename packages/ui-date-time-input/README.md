@@ -155,6 +155,7 @@ class Example extends React.Component {
     )
   }
 }
+render(<Example />)
 ```
 
 A DateTimeInput in a different locale:
@@ -196,6 +197,7 @@ class Example extends React.Component {
       </div>)
   }
 }
+render(<Example />)
 ```
 
 The properties of DateTimeInput prefaced

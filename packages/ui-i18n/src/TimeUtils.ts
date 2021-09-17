@@ -26,7 +26,6 @@ import { DateTime } from 'luxon'
 import type { DateTimeFormatPreset } from 'luxon'
 import { getWeekStartByLocale } from 'weekstart'
 
-// use https://github.com/gamtiq/weekstart
 /**
  * Get the user's time zone (or guess)
  * @returns A time zone identifier (see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
