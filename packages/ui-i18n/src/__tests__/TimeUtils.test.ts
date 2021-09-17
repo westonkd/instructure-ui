@@ -21,10 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { expect } from '@instructure/ui-test-utils'
-import TimeUtils from '../TimeUtils'
 
-const { now, isValid, browserTimeZone /*, parse, toLocaleString */ } = TimeUtils
+import { expect } from '@instructure/ui-test-utils'
+import { TimeUtils, DateTime } from '../TimeUtils'
+
+const {
+  now,
+  isValid,
+  browserTimeZone,
+  parse,
+  getFirstDayOfWeek,
+  getLocalDayNamesOfTheWeek
+} = TimeUtils
 
 describe('DateTime', () => {
   const timezone = 'America/Halifax' // -3
@@ -67,86 +75,69 @@ describe('DateTime', () => {
     expect(isValid('2018-04-15T23:30')).to.be.true()
     expect(isValid('2018-04-15')).to.be.true()
   })
-  /* TODO fix
+
   it('parses iso8601', () => {
-    const result = parse(
-      '2018-04-15T20:30:00-03:00',
-      locale,
-      timezone
-    ).toISOString()
+    const result = parse('2018-04-15T20:30:00-03:00', locale, timezone)
+      .toUTC()
+      .toISO()
     expect(result).to.equal('2018-04-15T23:30:00.000Z')
   })
 
-  it('parses llll', () => {
-    const result = parse(
-      'Sun, Apr 15, 2018 8:30 PM',
-      locale,
-      timezone
-    ).toISOString()
-    expect(result).to.equal('2018-04-15T23:30:00.000Z')
+  it('calculates the first day of the week', () => {
+    // normal case
+    const d1 = DateTime.fromISO('2021-09-15T20:30:00Z')
+    expect(getFirstDayOfWeek(d1, 'hu-hu').day).to.equal(13)
+    expect(getFirstDayOfWeek(d1, 'en-us').day).to.equal(12)
+    // date wraps month/year
+    const d2 = DateTime.fromISO('2022-01-01T20:30:00Z')
+    expect(getFirstDayOfWeek(d2, 'hu-hu').day).to.equal(27)
+    expect(getFirstDayOfWeek(d2, 'en-us').day).to.equal(26)
+    // date is the same
+    const d3 = DateTime.fromISO('2021-12-05T20:30:00Z')
+    expect(getFirstDayOfWeek(d3, 'hu-hu').day).to.equal(29)
+    expect(getFirstDayOfWeek(d3, 'en-us').day).to.equal(5)
+    // first day is Friday!
+    expect(getFirstDayOfWeek(d3, 'bn-bd').day).to.equal(3)
   })
 
-  it('parses LLLL', () => {
-    const result = parse(
-      'Sunday, April 15, 2018 8:30 PM',
-      locale,
-      timezone
-    ).toISOString()
-    expect(result).to.equal('2018-04-15T23:30:00.000Z')
+  it('calculates the local day names of the week', () => {
+    // short names
+    expect(getLocalDayNamesOfTheWeek('hu-hu', 'short')).to.eql([
+      'H',
+      'K',
+      'Sze',
+      'Cs',
+      'P',
+      'Szo',
+      'V'
+    ])
+    expect(getLocalDayNamesOfTheWeek('en-us', 'short')).to.eql([
+      'Sun',
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat'
+    ])
+    // long
+    expect(getLocalDayNamesOfTheWeek('en-us', 'long')).to.eql([
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday'
+    ])
+    expect(getLocalDayNamesOfTheWeek('es-mx', 'long')).to.eql([
+      'domingo',
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
+      'viernes',
+      'sábado'
+    ])
   })
-
-  it('parses lll', () => {
-    const result = parse('Apr 15, 2018 8:30 PM', locale, timezone).toISOString()
-    expect(result).to.equal('2018-04-15T23:30:00.000Z')
-  })
-
-  it('parses LLL', () => {
-    const result = parse(
-      'April 15, 2018 8:30 PM',
-      locale,
-      timezone
-    ).toISOString()
-    expect(result).to.equal('2018-04-15T23:30:00.000Z')
-  })
-
-  it('parses ll', () => {
-    const result = parse('Apr 15, 2018', locale, timezone).toISOString()
-    expect(result).to.equal('2018-04-15T03:00:00.000Z')
-  })
-
-  it('parses LL', () => {
-    const result = parse('April 15, 2018', locale, timezone).toISOString()
-    expect(result).to.equal('2018-04-15T03:00:00.000Z')
-  })
-
-  it('parses l', () => {
-    const result = parse('4/15/2018', locale, timezone).toISOString()
-    expect(result).to.equal('2018-04-15T03:00:00.000Z')
-  })
-
-  it('parses L', () => {
-    const result = parse('04/15/2018', locale, timezone).toISOString()
-    expect(result).to.equal('2018-04-15T03:00:00.000Z')
-  })
-
-  it('parses French L', () => {
-    const result = parse('15/04/2018', 'fr', timezone).toISOString()
-    expect(result).to.equal('2018-04-15T03:00:00.000Z')
-  })
-
-  it('parses French LL', () => {
-    const result = parse('15 Avril, 2018', 'fr', timezone).toISOString()
-    expect(result).to.equal('2018-04-15T03:00:00.000Z')
-  })
-
-  it('returns localized string', () => {
-    let result = toLocaleString('2018-04-15T13:00Z', 'en', 'UTC', 'LLL')
-    expect(result).to.equal('April 15, 2018 1:00 PM')
-    result = toLocaleString('2018-04-15T13:00Z', 'fr', 'UTC', 'LLL')
-    expect(result).to.equal('15 avril 2018 13:00')
-    // iso8601 in given timezone
-    result = toLocaleString('2018-04-15T13:00Z', 'fr', 'America/Halifax') // -3
-    expect(result).to.equal('2018-04-15T10:00:00.000-03:00')
-  })
- */
 })

@@ -69,10 +69,10 @@ function parse(dateString: string, locale: string, timezone: string) {
  * @param format If set to 'short' it will be maximum 3 letters long,
  *               if set to 'long' it will be the full word.
  */
-function getLocalDaysOfTheWeek(locale: string, format: 'short' | 'long') {
+function getLocalDayNamesOfTheWeek(locale: string, format: 'short' | 'long') {
   const ret: string[] = []
   const luxonFormat = format === 'short' ? 'EEE' : 'EEEE'
-  let currentDay = DateTime.now().startOf('week')
+  let currentDay = getFirstDayOfWeek(DateTime.now(), locale)
   for (let i = 0; i < 7; i++) {
     ret.push(currentDay.toFormat(luxonFormat, { locale: locale }))
     currentDay = currentDay.plus({ days: 1 })
@@ -84,13 +84,22 @@ function getLocalDaysOfTheWeek(locale: string, format: 'short' | 'long') {
  * Returns the first day of the week in the given locale.
  * The locale decides what is the first day, e.g. Sunday in the US, Monday in
  * the EU.
- * @param date
+ * @param date A Luxon Datetime object
  * @param locale A locale string, like 'en-us'
  */
-//function getFirstDayOfWeek(date: DateTime, locale: string) {
-//  const firstDay = getWeekStartByLocale(locale)
-// TODO finish this
-//}
+function getFirstDayOfWeek(date: DateTime, locale: string) {
+  let result: DateTime
+  let firstDay: number = getWeekStartByLocale(locale) // 0 = Sunday, 1 = Monday,..
+  if (firstDay == 0) {
+    firstDay = 7 // 7 = Sunday
+  }
+  if (firstDay <= date.weekday) {
+    result = date.minus({ days: date.weekday - firstDay })
+  } else {
+    result = date.minus({ days: date.weekday - (7 - firstDay) })
+  }
+  return result
+}
 
 /**
  * Determines if a string is a valid ISO 8601 string
@@ -112,7 +121,8 @@ const TimeUtils = {
   browserTimeZone,
   isValid,
   getWeekStartByLocale,
-  getDayNames: getLocalDaysOfTheWeek
+  getLocalDayNamesOfTheWeek,
+  getFirstDayOfWeek
 }
 
 export default TimeUtils

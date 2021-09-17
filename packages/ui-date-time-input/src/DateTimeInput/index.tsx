@@ -527,9 +527,13 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
 
   renderDays() {
     const renderedDate = this.state.renderedDate
-    // Sets it to the first Monday(!) of the month
-    // TODO: This might be not good enough, I assume that US ppl want Sunday
-    let currDate = renderedDate.startOf('month').startOf('week')
+    // Sets it to the first local day of the week counting from the start of the month
+    // note that first day depends on the locale, e.g. it's Sunday in the US and
+    // Monday in most of the EU.
+    let currDate = TimeUtils.getFirstDayOfWeek(
+      renderedDate.startOf('month'),
+      this.locale
+    )
     const arr: DateTime[] = []
     for (let i = 0; i < Calendar.DAY_COUNT; i++) {
       arr.push(currDate)
@@ -560,8 +564,14 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
 
   // The default weekdays rendered in the calendar
   get defaultWeekdays() {
-    const shortDayNames = TimeUtils.getDayNames(this.locale, 'short')
-    const longDayNames = TimeUtils.getDayNames(this.locale, 'long')
+    const shortDayNames = TimeUtils.getLocalDayNamesOfTheWeek(
+      this.locale,
+      'short'
+    )
+    const longDayNames = TimeUtils.getLocalDayNamesOfTheWeek(
+      this.locale,
+      'long'
+    )
     return [
       <AccessibleContent key={1} alt={longDayNames[0]}>
         {shortDayNames[0]}
