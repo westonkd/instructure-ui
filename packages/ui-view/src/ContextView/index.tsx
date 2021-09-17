@@ -23,11 +23,12 @@
  */
 /** @jsx jsx */
 
-import { Component } from 'react'
+import { Component, createRef } from 'react'
 
 import { jsx, withStyle } from '@instructure/emotion'
 import { omitProps } from '@instructure/ui-react-utils'
 import { OtherHTMLAttributes } from '@instructure/shared-types'
+import { createChainedFunction } from '@instructure/ui-utils'
 
 import { View } from '../View'
 
@@ -70,6 +71,8 @@ class ContextView extends Component<
     this.props.makeStyles?.()
   }
 
+  ref = createRef()
+
   render() {
     const {
       as,
@@ -101,7 +104,10 @@ class ContextView extends Component<
         display="inline-block"
         as={as}
         withVisualDebug={debug}
-        elementRef={elementRef}
+        elementRef={createChainedFunction(
+          (el: Element) => (this.ref.current = el),
+          elementRef
+        )}
         margin={margin}
         stacking={stacking}
       >
