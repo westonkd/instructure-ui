@@ -28,7 +28,7 @@ import { expect, mount, stub, spy, wait } from '@instructure/ui-test-utils'
 import { DateTimeInput } from '../index'
 
 import { DateTimeInputLocator } from '../DateTimeInputLocator'
-import { DateTime, TimeUtils } from '@instructure/ui-i18n'
+import { ApplyLocale, DateTime, TimeUtils } from '@instructure/ui-i18n'
 
 describe('<DateTimeInput />', async () => {
   const nextMonthButton = <span>next</span>
@@ -67,6 +67,7 @@ describe('<DateTimeInput />', async () => {
   })
 
   it('should use the value', async () => {
+    const onChange = stub()
     const locale = 'en-US'
     const timezone = 'US/Eastern'
     const dateTime = TimeUtils.parse('2017-05-01T23:30Z', locale, timezone)
@@ -82,6 +83,7 @@ describe('<DateTimeInput />', async () => {
         locale={locale}
         timezone={timezone}
         value={dateTime.toISO()}
+        onChange={onChange}
       />
     )
 
@@ -448,9 +450,10 @@ describe('<DateTimeInput />', async () => {
   })
 
   it('should update message when locale changed', async () => {
+    const onChange = stub()
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const moment_dt = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
+    const dateTime = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
 
     const subject = await mount(
       <DateTimeInput
@@ -462,7 +465,8 @@ describe('<DateTimeInput />', async () => {
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        value={moment_dt.toISO()}
+        onChange={onChange}
+        value={dateTime.toISO()}
       />
     )
 
@@ -479,9 +483,10 @@ describe('<DateTimeInput />', async () => {
   })
 
   it('should update message when timezone changed', async () => {
+    const onChange = stub()
     const locale = 'en-US'
     const timezone = 'US/Eastern'
-    const moment_dt = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
+    const dateTime = TimeUtils.parse('2017-05-01T17:30Z', locale, timezone)
 
     const subject = await mount(
       <DateTimeInput
@@ -493,7 +498,8 @@ describe('<DateTimeInput />', async () => {
         invalidDateTimeMessage="whoops"
         locale={locale}
         timezone={timezone}
-        value={moment_dt.toISO()}
+        value={dateTime.toISO()}
+        onChange={onChange}
       />
     )
 
@@ -604,5 +610,31 @@ describe('<DateTimeInput />', async () => {
       await dateTimeInput.find(':contains(May 1, 2017, 1:30 PM)')
     ).to.exist()
     expect(await dateTimeInput.find(':contains(hello world)')).to.exist()
+  })
+
+  it('should read locale and timezone from context', async () => {
+    const onChange = stub()
+    const dateTime = TimeUtils.parse('2017-05-01T17:30Z', 'en-US', 'GMT')
+    await mount(
+      // Africa/Nairobi is GMT +3
+      <ApplyLocale locale="fr" timezone="Africa/Nairobi">
+        <DateTimeInput
+          description="date time"
+          dateLabel="date"
+          renderNextMonthButton={nextMonthButton}
+          renderPrevMonthButton={prevMonthButton}
+          timeLabel="time"
+          invalidDateTimeMessage="whoops"
+          value={dateTime.toISO()}
+          onChange={onChange}
+        />
+      </ApplyLocale>
+    )
+    const dateTimeInput = await DateTimeInputLocator.find()
+    expect(
+      await dateTimeInput.find(
+        ':contains(lundi 1 mai 2017, 20:30 heure normale d’Afrique de l’Est)'
+      )
+    ).to.exist()
   })
 })

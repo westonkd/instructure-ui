@@ -108,6 +108,12 @@ class TimeSelect extends Component<TimeSelectProps, TimeSelectState> {
     this.state = this.getInitialState()
   }
 
+  componentDidMount() {
+    // we'll need to recalculate the state because the context value is
+    // set at this point (and it might change locale & timezone)
+    this.setState(this.getInitialState())
+  }
+
   _emptyOptionId = uid('Select-EmptyOption')
 
   focus() {
@@ -247,7 +253,7 @@ class TimeSelect extends Component<TimeSelectProps, TimeSelectState> {
         // store time options
         options.push({
           id: this.getFormattedId(newDate), // iso no spaces
-          value: newDate.toISO(), // toISOString(), // iso
+          value: newDate.toISO(),
           label: this.props.format
             ? newDate.toFormat(this.props.format)
             : newDate.toISO() // formatted string
