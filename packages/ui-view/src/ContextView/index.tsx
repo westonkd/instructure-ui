@@ -23,7 +23,7 @@
  */
 /** @jsx jsx */
 
-import { Component, createRef } from 'react'
+import { Component } from 'react'
 
 import { jsx, withStyle } from '@instructure/emotion'
 import { omitProps } from '@instructure/ui-react-utils'
@@ -71,7 +71,7 @@ class ContextView extends Component<
     this.props.makeStyles?.()
   }
 
-  ref = createRef()
+  ref: Element | undefined
 
   render() {
     const {
@@ -105,7 +105,7 @@ class ContextView extends Component<
         as={as}
         withVisualDebug={debug}
         elementRef={createChainedFunction(
-          (el: Element) => (this.ref.current = el),
+          (el: Element) => (this.ref = el),
           elementRef
         )}
         margin={margin}
