@@ -14,16 +14,6 @@ render: false
 ---
 class Example extends React.Component {
   render () {
-    const buttonProps = (type = 'prev') => ({
-        size: 'small',
-        withBackground: false,
-        withBorder: false,
-        renderIcon: type === 'prev'
-          ? <IconArrowOpenStartSolid color="primary" />
-          : <IconArrowOpenEndSolid color="primary" />,
-        screenReaderLabel: type === 'prev' ? 'Previous month' : 'Next month'
-      })
-
     return (
       <div style= { {height: 350,width: '40em'}}>
         <DateTimeInput
@@ -31,8 +21,8 @@ class Example extends React.Component {
           datePlaceholder="Choose a date"
           dateLabel="Date"
           timeLabel="Time"
-          renderPrevMonthButton={<IconButton {...buttonProps('prev')} />}
-          renderNextMonthButton={<IconButton {...buttonProps('next')} />}
+          prevMonthLabel='Previous month'
+          nextMonthLabel='Next month'
           layout="columns"
           defaultValue="2018-01-18T13:10"
         />
@@ -205,23 +195,3 @@ The properties of DateTimeInput prefaced with _date_ are passed to the underlyin
 with _time_ are forwarded to the underlying
 [TimeSelect](#TimeSelect). Others are either shared by both sub-components (e.g. locale), or
 are unique to DateTimeInput (e.g. description).
-
-The user input error message function property `invalidDateTimeMessage` has to handle
-a number of cases: date input is invalid, date is missing when time is entered, and
-date and time are missing when component is required. (It is currently impossible to
-enter in invalid time, but that will eventually need to be handled.) A function that
-handles these cases might look like
-
-```js
-function invalidDateTimeMessage(rawDateValue, rawTimeValue) {
-  if (rawDateValue) {
-    return `'${rawDateValue}' is not a valid date.`
-  } else {
-    if (rawTimeValue) {
-      return 'You must provide a date with a time.'
-    } else {
-      return 'Date and time values are required.' // if required is true
-    }
-  }
-}
-```

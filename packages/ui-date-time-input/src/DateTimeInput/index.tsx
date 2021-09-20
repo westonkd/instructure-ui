@@ -33,7 +33,6 @@ import {
   DateTime,
   ApplyLocaleContext
 } from '@instructure/ui-i18n'
-import type { DateTimeFormatPreset } from '@instructure/ui-i18n'
 import { FormPropTypes, FormFieldGroup } from '@instructure/ui-form-field'
 import type { FormMessage } from '@instructure/ui-form-field'
 
@@ -43,6 +42,11 @@ import type { InteractionType } from '@instructure/ui-react-utils'
 import { Calendar } from '@instructure/ui-calendar'
 import { testable } from '@instructure/ui-testable'
 import { AccessibleContent } from '@instructure/ui-a11y-content'
+import { IconButton } from '@instructure/ui-buttons'
+import {
+  IconArrowOpenEndSolid,
+  IconArrowOpenStartSolid
+} from '@instructure/ui-icons'
 
 type DateTimeInputProps = {
   /**
@@ -50,23 +54,19 @@ type DateTimeInputProps = {
    **/
   description: React.ReactNode
   /**
-   * The label over the Date Input
+   * The label over the DateInput
    **/
   dateLabel: string
   /**
-   * A button to render in the calendar navigation header. The recommendation is
-   * to compose it with the [Button](#Button) component, setting the `variant`
-   * prop to `icon`, the `size` prop to `small`, and setting the `icon` prop to
-   * [IconArrowOpenEnd](#iconography).
+   * The screen reader label for the calendar navigation header's prev month
+   * button
    */
-  renderNextMonthButton: ((...args: any[]) => React.ReactNode) | React.ReactNode
+  prevMonthLabel: string
   /**
-   * A button to render in the calendar navigation header. The recommendation is
-   * to compose it with the [Button](#Button) component, setting the `variant`
-   * prop to `icon`, the `size` prop to `small`, and setting the `icon` prop to
-   * [IconArrowOpenStart](#iconography).
+   * The screen reader label for the calendar navigation header's next month
+   * button
    */
-  renderPrevMonthButton: ((...args: any[]) => React.ReactNode) | React.ReactNode
+  nextMonthLabel: string
   /**
    * HTML placeholder text to display when the date input has no value.
    * This should be hint text, not a label replacement.
@@ -75,10 +75,11 @@ type DateTimeInputProps = {
   /**
    * The format of the date shown in the `DateInput` when a date is selected.
    * Valid formats are compatible with
-   * [moment.js formats](https://momentjs.com/docs/#/displaying/format/),
+   * [Luxon formats](https://moment.github.io/luxon/#/formatting?id=table-of-tokens),
    * including localized formats.
    *
-   * If omitted, defers to the underlying `DateInput`'s default.
+   * If omitted, it will use 'DDD' which is a localized date with full month,
+   * e.g. "August 6, 2014"
    **/
   dateFormat?: string
   /**
@@ -92,7 +93,7 @@ type DateTimeInputProps = {
   /**
    * The format of the time shown in the `TimeSelect` when a time is selected.
    * Valid formats are compatible with
-   * [moment.js formats](https://momentjs.com/docs/#/displaying/format/),
+   * [Luxon formats](https://moment.github.io/luxon/#/formatting?id=table-of-tokens),
    * including localized formats.
    *
    * If omitted, defers to the underlying `TimeSelect`'s default.
@@ -131,25 +132,22 @@ type DateTimeInputProps = {
    *  *rawDateValue*: the string entered as a date by the user
    *
    * Currently, times must be selected from a list, it can never be incorrect,
-   * Though `invalidDateTimeMessage` will be called if the user selects a time without
+   * Though `invalidDateTimeMessage()` will be called if the user selects a time without
    * setting the date.
-   *
-   * Either parameter is undefined if the user has not entered anything,
-   * which you can use to test for no input if the `DateTimeInput` is required.
    **/
   invalidDateTimeMessage: string | ((rawDateValue?: string) => string)
   /**
-   * Messages my parent would like displayed
+   * Messages to be displayed
    */
   messages?: FormMessage[]
   /**
    * This format of the composite date-time when displayed in messages.
-   * Valid formats are compatible with
-   * [Luxon formats](https://moment.github.io/luxon/#/formatting?id=presets),
-   * including localized formats.
+   * Valid formats are defined in the
+   * [Luxon docs](https://moment.github.io/luxon/#/formatting?id=table-of-tokens)
    **/
-  messageFormat?: DateTimeFormatPreset
+  messageFormat?: string
   /**
+   * The layout of this component
    * Vertically stacked, horizontally arranged in 2 columns, or inline.
    * See [FormFieldGroup](#FormFieldGroup) for details.
    **/
@@ -158,11 +156,11 @@ type DateTimeInputProps = {
    * An ISO 8601 formatted date string representing the current date-time
    * (must be accompanied by an onChange prop).
    **/
-  value?: string //controllable(I18nPropTypes.iso8601, 'onChange'),
+  value?: string
   /**
    * An ISO 8601 formatted date string to use if `value` isn't provided.
    **/
-  defaultValue?: string //I18nPropTypes.iso8601,
+  defaultValue?: string
   /**
    * An array of labels containing the name of each day of the week. The visible
    * portion of the label should be abbreviated (no longer than three characters).
@@ -172,7 +170,12 @@ type DateTimeInputProps = {
    * full day name for assistive technologies and the children containing the
    * abbreviation. ex. `[<AccessibleContent alt="Monday">Mon</AccessibleContent>, ...]`
    *
-   * Note that the first day of the week is always Monday!
+   * You must render set the starting day of the week to the one specified by
+   * the current locale (e.g. Sunday in the US, Monday in Germany),
+   * dates are already displayed this way.
+   *
+   * By default it will render accessible, localized, abbreviated weekdays
+   * with week starts according to the current locale.
    */
   renderWeekdayLabels?: (((...args: any[]) => any) | React.ReactNode)[]
   /**
@@ -188,9 +191,10 @@ type DateTimeInputProps = {
   interaction?: InteractionType
   /**
    * Called when the date-time value has changed.
-   * The passed in parameters are
-   * *event*: the triggering event (which may be from the underlying
-   * `DateInput` or `TimeSelect`), *isoValue*: the new date value in ISO 8601 format.
+   * The passed in parameters are:
+   *   *event*: The triggering event (which may be from the underlying
+   * `          DateInput` or `TimeSelect`)
+   *   *isoValue*: The new date value in ISO 8601 format, undefined if its invalid
    **/
   onChange?: (event: SyntheticEvent, isoValue?: string) => void
   /**
@@ -235,10 +239,8 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
   static propTypes = {
     description: PropTypes.node.isRequired,
     dateLabel: PropTypes.string.isRequired,
-    renderNextMonthButton: PropTypes.oneOfType([PropTypes.func, PropTypes.node])
-      .isRequired,
-    renderPrevMonthButton: PropTypes.oneOfType([PropTypes.func, PropTypes.node])
-      .isRequired,
+    prevMonthLabel: PropTypes.string.isRequired,
+    nextMonthLabel: PropTypes.string.isRequired,
     datePlaceholder: PropTypes.string,
     dateFormat: PropTypes.string,
     interaction: PropTypes.oneOf(['enabled', 'disabled', 'readonly']),
@@ -269,7 +271,7 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
   static defaultProps = {
     layout: 'inline',
     timeStep: 30,
-    messageFormat: DateTime.DATETIME_HUGE,
+    messageFormat: 'ffff', // extra verbose localized date and time
     isRequired: false,
     // Leave interaction default undefined so that `disabled` and `readOnly` can also be supplied
     interaction: undefined,
@@ -285,12 +287,11 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     locale: undefined,
     timeFormat: undefined,
     datePlaceholder: undefined,
-    dateFormat: undefined
+    dateFormat: 'DDD' // Localized date with full month, e.g. "August 6, 2014"
   }
 
   static contextType = ApplyLocaleContext
-  // Localized date with full month, e.g. "August 6, 2014"
-  private static readonly _dateInputFormat = 'DDD'
+
   private _timeInput?: TimeSelect
 
   constructor(props: DateTimeInputProps) {
@@ -328,7 +329,10 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     const isUpdated =
       valueChanged ||
       prevProps.locale !== this.props.locale ||
-      prevProps.timezone !== this.props.timezone
+      prevProps.timezone !== this.props.timezone ||
+      prevProps.dateFormat !== this.props.dateFormat ||
+      prevProps.messageFormat !== this.props.messageFormat ||
+      prevProps.invalidDateTimeMessage !== this.props.invalidDateTimeMessage
 
     if (isUpdated) {
       this.setState((_prevState: DateTimeInputState) => {
@@ -365,12 +369,12 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
               .toISO()
         return {
           iso: parsed,
-          dateInputText: parsed.toFormat(DateTimeInput._dateInputFormat),
+          dateInputText: parsed.toFormat(this.dateFormat),
           message: {
             type: 'success',
             text: this.props.messageFormat
-              ? parsed.toLocaleString(this.props.messageFormat)
-              : parsed.toLocaleString(DateTime.DATETIME_HUGE)
+              ? parsed.toFormat(this.props.messageFormat)
+              : parsed.toFormat('ffff')
           },
           timeSelectValue: newTimeSelectValue,
           renderedDate: parsed
@@ -410,12 +414,17 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     return TimeUtils.browserTimeZone()
   }
 
+  get dateFormat() {
+    return this.props.dateFormat ? this.props.dateFormat : 'DDD'
+  }
+
   // when the user enters a new date via keyboard. Currently only possible
   // by replacing 1 letter...
   // dateValue is a localized value, like '5/1/2017'
+  // TODO this needs to be handled better
   handleDateTextChange = (event: SyntheticEvent, date: { value: string }) => {
     this.handleDayClick(event, {
-      date: DateTime.fromFormat(date.value, DateTimeInput._dateInputFormat, {
+      date: DateTime.fromFormat(date.value, this.dateFormat, {
         locale: this.locale(),
         zone: this.timezone()
       }).toISO()
@@ -482,11 +491,10 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
 
   handleBlur = (e: SyntheticEvent) => {
     const newState = this.recalculateState(
-      DateTime.fromFormat(
-        this.state.dateInputText,
-        DateTimeInput._dateInputFormat,
-        { locale: this.locale(), zone: this.timezone() }
-      ).toISO(),
+      DateTime.fromFormat(this.state.dateInputText, this.dateFormat, {
+        locale: this.locale(),
+        zone: this.timezone()
+      }).toISO(),
       false,
       true
     )
@@ -538,6 +546,10 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
   }
 
   renderDays() {
+    if (!this.state.isShowingCalendar) {
+      // this is an expensive function, only execute if the calendar is open
+      return
+    }
     const renderedDate = this.state.renderedDate
     // Sets it to the first local day of the week counting back from the start of the month.
     // Note that first day depends on the locale, e.g. it's Sunday in the US and
@@ -576,6 +588,10 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
 
   // The default weekdays rendered in the calendar
   get defaultWeekdays() {
+    if (!this.state.isShowingCalendar) {
+      // this is an expensive function, only execute if the calendar is open
+      return []
+    }
     const shortDayNames = TimeUtils.getLocalDayNamesOfTheWeek(
       this.locale(),
       'short'
@@ -609,13 +625,36 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
     ]
   }
 
+  renderNextPrevMonthButton(type: 'prev' | 'next') {
+    if (!this.state.isShowingCalendar) {
+      return
+    }
+    return (
+      <IconButton
+        size="small"
+        withBackground={false}
+        withBorder={false}
+        renderIcon={
+          type === 'prev' ? (
+            <IconArrowOpenStartSolid color="primary" />
+          ) : (
+            <IconArrowOpenEndSolid color="primary" />
+          )
+        }
+        screenReaderLabel={
+          type === 'prev'
+            ? this.props.prevMonthLabel
+            : this.props.nextMonthLabel
+        }
+      />
+    )
+  }
+
   render() {
     const {
       description,
       datePlaceholder,
       dateLabel,
-      renderNextMonthButton,
-      renderPrevMonthButton,
       dateInputRef,
       timeLabel,
       timeFormat,
@@ -654,8 +693,8 @@ class DateTimeInput extends Component<DateTimeInputProps, DateTimeInputState> {
           onRequestShowCalendar={this.handleShowCalendar}
           onRequestHideCalendar={this.handleHideCalendar}
           isShowingCalendar={this.state.isShowingCalendar}
-          renderNextMonthButton={renderNextMonthButton}
-          renderPrevMonthButton={renderPrevMonthButton}
+          renderNextMonthButton={this.renderNextPrevMonthButton('next')}
+          renderPrevMonthButton={this.renderNextPrevMonthButton('prev')}
           onRequestSelectNextDay={this.handleSelectNextDay}
           onRequestSelectPrevDay={this.handleSelectPrevDay}
           onRequestRenderNextMonth={this.handleRenderNextMonth}

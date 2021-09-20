@@ -31,6 +31,7 @@
   "dependencies": {
     "@babel/runtime": "^7.13.10",
     "@instructure/emotion": "8.9.1",
+    "@instructure/ui-buttons": "8.9.1",
     "@instructure/ui-calendar": "8.9.1",
     "@instructure/ui-date-input": "8.9.1",
     "@instructure/ui-form-field": "8.9.1",

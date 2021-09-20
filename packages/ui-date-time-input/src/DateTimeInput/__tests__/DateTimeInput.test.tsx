@@ -31,9 +31,6 @@ import { DateTimeInputLocator } from '../DateTimeInputLocator'
 import { ApplyLocale, DateTime, TimeUtils } from '@instructure/ui-i18n'
 
 describe('<DateTimeInput />', async () => {
-  const nextMonthButton = <span>next</span>
-  const prevMonthButton = <span>prev</span>
-
   it('should use the default value', async () => {
     const locale = 'en-US'
     const timezone = 'US/Eastern'
@@ -42,9 +39,9 @@ describe('<DateTimeInput />', async () => {
     await mount(
       <DateTimeInput
         description="date time"
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -75,9 +72,9 @@ describe('<DateTimeInput />', async () => {
     await mount(
       <DateTimeInput
         description="date time"
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -110,9 +107,9 @@ describe('<DateTimeInput />', async () => {
     await mount(
       <DateTimeInput
         description="date time"
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -143,8 +140,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -174,8 +171,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         locale="en-US"
         timezone="US/Eastern"
@@ -205,8 +202,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -235,8 +232,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -276,8 +273,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -312,8 +309,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -343,8 +340,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -367,8 +364,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -389,8 +386,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale="en-US"
@@ -426,8 +423,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -459,8 +456,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -492,8 +489,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -523,8 +520,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         value="totally not a date"
@@ -539,8 +536,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         defaultValue="totally not a date"
@@ -559,8 +556,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -586,8 +583,8 @@ describe('<DateTimeInput />', async () => {
       <DateTimeInput
         description="date time"
         dateLabel="date"
-        renderNextMonthButton={nextMonthButton}
-        renderPrevMonthButton={prevMonthButton}
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
         timeLabel="time"
         invalidDateTimeMessage="whoops"
         locale={locale}
@@ -621,8 +618,8 @@ describe('<DateTimeInput />', async () => {
         <DateTimeInput
           description="date time"
           dateLabel="date"
-          renderNextMonthButton={nextMonthButton}
-          renderPrevMonthButton={prevMonthButton}
+          prevMonthLabel="Previous month"
+          nextMonthLabel="Next month"
           timeLabel="time"
           invalidDateTimeMessage="whoops"
           value={dateTime.toISO()}
@@ -636,5 +633,64 @@ describe('<DateTimeInput />', async () => {
         ':contains(lundi 1 mai 2017, 20:30 heure normale d’Afrique de l’Est)'
       )
     ).to.exist()
+  })
+
+  it('should format date according to dateFormat', async () => {
+    const onChange = stub()
+    const dateTime = TimeUtils.parse('2017-05-01T17:30Z', 'en-US', 'GMT')
+    const subject = await mount(
+      <DateTimeInput
+        description="date time"
+        dateLabel="date"
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
+        timeLabel="time"
+        invalidDateTimeMessage="whoops"
+        dateFormat="D" // should look like 9/4/2017
+        value={dateTime.toISO()}
+        onChange={onChange}
+      />
+    )
+    const dateTimeInput = await DateTimeInputLocator.find()
+    const dateLocator = await dateTimeInput.findDateInput()
+    const dateInput = await dateLocator.findInput()
+
+    expect(dateInput).to.have.value('5/1/2017')
+
+    await subject.setProps({
+      dateFormat: 'yyyy LLLL'
+    })
+    expect(dateInput).to.have.value('2017 May')
+  })
+
+  it('should format bottom message according to messageFormat', async () => {
+    const onChange = stub()
+    const dateTime = TimeUtils.parse('2017-05-01T17:30Z', 'en-US', 'GMT')
+    const subject = await mount(
+      <DateTimeInput
+        description="date time"
+        dateLabel="date"
+        prevMonthLabel="Previous month"
+        nextMonthLabel="Next month"
+        timeLabel="time"
+        invalidDateTimeMessage="whoops"
+        value={dateTime.toISO()}
+        onChange={onChange}
+        locale="en-US"
+        timezone="US/Eastern"
+      />
+    )
+    const dateTimeInput = await DateTimeInputLocator.find()
+
+    expect(
+      await dateTimeInput.find(
+        ':contains(Monday, May 1, 2017, 1:30 PM Eastern Daylight Time)'
+      )
+    ).to.exist()
+
+    await subject.setProps({
+      messageFormat: 'f'
+    })
+    expect(await dateTimeInput.find(':contains(5/1/2017, 1:30 PM)')).to.exist()
   })
 })
